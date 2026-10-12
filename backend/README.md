@@ -38,7 +38,7 @@ Sem `APP_JWT_SECRET` (≥ 32 caracteres) ou com senha de admin curta, a aplicaç
 
 ### 3. Vercel — front
 Duas formas de o front falar com a API; recomendo a **primeira**:
-1. **Rewrite no `frontend/vercel.json`**: `/api/*` → `https://SUA-API.onrender.com/api/*`. As fotos (`/api/images/...`, imutáveis, cache de 1 ano) passam a ser cacheadas pela CDN da Vercel, aliviando a API, e o front não precisa saber o endereço do Render.
+1. **Rewrite no `frontend/vercel.json`**: `/api/*` → `https://bar-do-marcelo-api.onrender.com/api/*`. As fotos (`/api/images/...`, imutáveis, cache de 1 ano) passam a ser cacheadas pela CDN da Vercel, aliviando a API, e o front não precisa saber o endereço do Render.
 2. **Chamada direta** com `VITE_API_URL` (e ajuste de `connect-src`/`img-src` no `vercel.json`).
 
 > **Atenção — CORS vale nas duas formas.** Mesmo com o rewrite, o navegador envia o cabeçalho `Origin` nas escritas (`POST/PUT/PATCH/DELETE`, ex.: login e salvar item), e a API as vê como vindas de outro site. Sem o domínio da Vercel em `APP_CORS_ORIGINS`, o login responde **403 "Você não tem permissão"**. Leituras (`GET`) funcionariam, o que engana no primeiro teste.
