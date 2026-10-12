@@ -31,7 +31,7 @@ Os testes E2E cobrem: cardápio (desktop e celular), busca, detalhes, login (cer
 
 ## Deploy na Vercel
 1. *Add New → Project* → este repositório → **Root Directory: `frontend`** (o framework Vite é detectado).
-2. Edite `vercel.json` e troque `https://bar-do-marcelo-api.onrender.com` pelo endereço real da API no Render. É esse *rewrite* que faz `/api/*` chegar à API: o navegador só fala com o domínio da Vercel, e as fotos (cache de 1 ano) passam a ser servidas pela CDN.
+2. O `vercel.json` já aponta para a API (`https://bar-do-marcelo-api.onrender.com`); se você criar a API com outro nome, troque o endereço lá. É esse *rewrite* que faz `/api/*` chegar à API: o navegador só fala com o domínio da Vercel, e as fotos (cache de 1 ano) passam a ser servidas pela CDN.
 3. **No Render, coloque o domínio da Vercel em `APP_CORS_ORIGINS`** (ex.: `https://cardapio-marcelo.vercel.app`; para os links de preview use um padrão do seu projeto, ex.: `https://cardapio-marcelo-*.vercel.app`). Sem isso, o login e qualquer salvamento respondem 403, porque o navegador envia `Origin` nas escritas.
 4. `vercel.json` também define os cabeçalhos de segurança (CSP, `X-Frame-Options`, `nosniff`…) e o cache imutável de `/assets`.
 

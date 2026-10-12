@@ -22,3 +22,9 @@ cd frontend && npm install && npm run dev                            # site em :
 - CI no GitHub Actions: `.github/workflows/backend.yml` e `frontend.yml`.
 
 Capturas de tela: [docs/screenshots](docs/screenshots). Plano original: [PLANO.md](PLANO.md).
+
+## Produção
+- **API (Render):** https://bar-do-marcelo-api.onrender.com — plano gratuito (dorme após 15 min sem acesso; o primeiro acesso leva ~1 min).
+- **Banco (Neon):** projeto `bar-do-marcelo`, região Ohio (`aws-us-east-2`).
+- **Site (Vercel):** projeto `cardapio-bar-do-marcelo`, pasta raiz `frontend`. O domínio dele precisa estar em `APP_CORS_ORIGINS` no Render.
+- O Render publica a partir da branch `claude/menu-app-react-spring-eg9i8t`; se for passar para `main`, troque a branch no serviço.
