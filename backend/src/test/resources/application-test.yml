@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:test-${random.uuid};MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+app:
+  jwt.secret: test-secret-test-secret-test-secret-test-secret
+  admin:
+    username: admin
+    password: admin12345
+  login.max-failures: 3

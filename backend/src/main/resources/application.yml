@@ -1,0 +1,54 @@
+spring:
+  application.name: menu-api
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate.ddl-auto: validate
+    properties.hibernate:
+      jdbc.batch_size: 25
+      order_inserts: true
+      order_updates: true
+  flyway.enabled: true
+  servlet.multipart:
+    max-file-size: 5MB
+    max-request-size: 6MB
+  mvc.problemdetails.enabled: true
+  cache:
+    type: caffeine
+    cache-names: menu
+    caffeine.spec: maximumSize=100,expireAfterWrite=10m
+
+server:
+  compression:
+    enabled: true
+    mime-types: application/json
+    min-response-size: 1024
+  shutdown: graceful
+  error.include-message: never
+
+management:
+  endpoints.web.exposure.include: health
+  endpoint.health.probes.enabled: true
+
+app:
+  jwt:
+    secret: ${APP_JWT_SECRET}
+    ttl: 8h
+  admin:
+    username: ${APP_ADMIN_USER}
+    password: ${APP_ADMIN_PASSWORD}
+  storage:
+    dir: ${APP_UPLOAD_DIR:uploads}
+    max-dimension: 1200
+  cors:
+    allowed-origins: ${APP_CORS_ORIGINS:http://localhost:5173}
+  login:
+    max-failures: 5
+    block-duration: 15m
+
+springdoc:
+  api-docs.enabled: false
+  swagger-ui.enabled: false

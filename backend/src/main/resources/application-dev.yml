@@ -1,0 +1,15 @@
+# Perfil de desenvolvimento: sobe sem nenhuma configuração externa (H2 em memória).
+# mvn spring-boot:run -Dspring-boot.run.profiles=dev   (admin / admin12345)
+spring:
+  datasource:
+    url: jdbc:h2:mem:menu;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+app:
+  jwt.secret: dev-only-secret-dev-only-secret-dev-only-secret
+  admin:
+    username: admin
+    password: admin12345
+springdoc:
+  api-docs.enabled: true
+  swagger-ui.enabled: true
