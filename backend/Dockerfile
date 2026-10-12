@@ -8,12 +8,12 @@ RUN mvn -q -B -DskipTests package
 
 # --- runtime (JRE enxuto, usuário sem privilégios) ---
 FROM eclipse-temurin:21-jre
-RUN useradd --system --uid 10001 app && mkdir -p /data/uploads && chown app /data/uploads
+RUN useradd --system --uid 10001 app
 USER app
 WORKDIR /app
 COPY --from=build /app/target/menu-api-*.jar app.jar
-ENV APP_UPLOAD_DIR=/data/uploads \
-    JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:+UseSerialGC -XX:TieredStopAtLevel=1"
-VOLUME /data/uploads
+# Memória pensada para instâncias de 512 MB (Render free): GC serial, heap em 60% da RAM do contêiner.
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xss512k"
 EXPOSE 8080
+# A porta vem da variável PORT (definida pelo Render); sem ela usa 8080.
 ENTRYPOINT ["java", "-jar", "app.jar"]

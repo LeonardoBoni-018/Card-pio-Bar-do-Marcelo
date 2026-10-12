@@ -2,6 +2,8 @@ package com.bardomarcelo.menu.api;
 
 import com.bardomarcelo.menu.category.Category;
 import com.bardomarcelo.menu.category.CategoryRepository;
+import com.bardomarcelo.menu.image.ImageStorageService;
+import com.bardomarcelo.menu.image.StoredImageRepository;
 import com.bardomarcelo.menu.item.MenuItem;
 import com.bardomarcelo.menu.item.MenuItemRepository;
 import com.bardomarcelo.menu.menu.MenuService;
@@ -11,8 +13,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,8 +29,6 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** Base dos testes de integração: sobe a aplicação inteira (H2 + Flyway) e limpa os dados a cada teste. */
@@ -39,23 +37,19 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 public abstract class ApiTestSupport {
 
-    static final Path UPLOAD_DIR = createUploadDir();
-
-    @DynamicPropertySource
-    static void storageProperties(DynamicPropertyRegistry registry) {
-        registry.add("app.storage.dir", UPLOAD_DIR::toString);
-    }
-
     @Autowired protected MockMvc mvc;
     @Autowired protected ObjectMapper json;
     @Autowired protected CategoryRepository categories;
     @Autowired protected MenuItemRepository items;
     @Autowired protected CacheManager cacheManager;
     @Autowired protected JwtEncoder jwtEncoder;
+    @Autowired protected ImageStorageService images;
+    @Autowired protected StoredImageRepository storedImages;
 
     @BeforeEach
     void cleanDatabase() {
         items.deleteAll();
+        storedImages.deleteAll();
         categories.deleteAll();
         cacheManager.getCache(MenuService.CACHE).clear();
     }
@@ -110,15 +104,5 @@ public abstract class ApiTestSupport {
             throw new UncheckedIOException(e);
         }
         return out.toByteArray();
-    }
-
-    private static Path createUploadDir() {
-        try {
-            Path dir = Files.createTempDirectory("menu-api-test-uploads");
-            dir.toFile().deleteOnExit();
-            return dir;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
     }
 }

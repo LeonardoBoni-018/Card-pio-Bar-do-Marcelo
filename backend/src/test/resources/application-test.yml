@@ -9,3 +9,4 @@ app:
     username: admin
     password: admin12345
   login.max-failures: 3
+  cors.allowed-origins: http://localhost:5173,https://cardapio-*.vercel.app

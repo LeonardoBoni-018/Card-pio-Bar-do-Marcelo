@@ -80,6 +80,12 @@ class SecurityApiTest extends ApiTestSupport {
     }
 
     @Test
+    @DisplayName("health de liveness (usado pelo Render) responde sem consultar o banco")
+    void livenessProbe() throws Exception {
+        mvc.perform(get("/actuator/health/liveness")).andExpect(status().isOk());
+    }
+
+    @Test
     @DisplayName("CORS libera apenas a origem configurada")
     void cors() throws Exception {
         mvc.perform(options("/api/menu")
@@ -87,6 +93,16 @@ class SecurityApiTest extends ApiTestSupport {
                         .header("Access-Control-Request-Method", "GET"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"));
+        // padrão com curinga (previews da Vercel)
+        mvc.perform(options("/api/menu")
+                        .header("Origin", "https://cardapio-git-feature-marcelo.vercel.app")
+                        .header("Access-Control-Request-Method", "GET"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "https://cardapio-git-feature-marcelo.vercel.app"));
+        mvc.perform(options("/api/menu")
+                        .header("Origin", "https://outro-projeto.vercel.app")
+                        .header("Access-Control-Request-Method", "GET"))
+                .andExpect(status().isForbidden());
         mvc.perform(options("/api/menu")
                         .header("Origin", "http://site-malicioso.example")
                         .header("Access-Control-Request-Method", "GET"))

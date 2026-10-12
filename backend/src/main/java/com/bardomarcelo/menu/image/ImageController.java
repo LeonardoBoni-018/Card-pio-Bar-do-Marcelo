@@ -3,10 +3,8 @@ package com.bardomarcelo.menu.image;
 import com.bardomarcelo.menu.common.NotFoundException;
 import com.bardomarcelo.menu.item.MenuItem;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import java.nio.file.Path;
+import java.net.URI;
 import java.time.Duration;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +13,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 public class ImageController {
+
+    private static final CacheControl IMMUTABLE = CacheControl.maxAge(Duration.ofDays(365)).cachePublic().immutable();
 
     private final ImageStorageService storage;
 
@@ -31,20 +32,27 @@ public class ImageController {
     public ResponseEntity<ImageResponse> upload(@RequestParam("file") MultipartFile file) {
         String filename = storage.store(file);
         String url = MenuItem.IMAGE_URL_PREFIX + filename;
-        return ResponseEntity.created(java.net.URI.create(url)).body(new ImageResponse(filename, url));
+        return ResponseEntity.created(URI.create(url)).body(new ImageResponse(filename, url));
     }
 
-    /** Nomes são UUIDs e nunca mudam de conteúdo, então o navegador pode guardar por muito tempo. */
+    /**
+     * Nomes são UUIDs e o conteúdo nunca muda, então navegador e CDN (Vercel) podem guardar por muito tempo;
+     * revalidações respondem 304 sem nem consultar o banco.
+     */
     @GetMapping("/api/images/{filename}")
-    public ResponseEntity<Resource> download(@PathVariable String filename) {
-        Path path = storage.resolve(filename);
-        if (path == null || !storage.exists(filename)) {
+    public ResponseEntity<byte[]> download(@PathVariable String filename, WebRequest request) {
+        if (!ImageStorageService.isValidName(filename)) {
             throw new NotFoundException("Imagem não encontrada.");
         }
-        MediaType type = filename.endsWith(".png") ? MediaType.IMAGE_PNG : MediaType.IMAGE_JPEG;
+        String etag = "\"" + filename + "\"";
+        if (request.checkNotModified(etag)) {
+            return null; // 304 já enviado
+        }
+        StoredImage image = storage.find(filename).orElseThrow(() -> new NotFoundException("Imagem não encontrada."));
         return ResponseEntity.ok()
-                .cacheControl(CacheControl.maxAge(Duration.ofDays(365)).cachePublic().immutable())
-                .contentType(type)
-                .body(new FileSystemResource(path));
+                .cacheControl(IMMUTABLE)
+                .eTag(etag)
+                .contentType(MediaType.parseMediaType(image.getContentType()))
+                .body(image.getData());
     }
 }

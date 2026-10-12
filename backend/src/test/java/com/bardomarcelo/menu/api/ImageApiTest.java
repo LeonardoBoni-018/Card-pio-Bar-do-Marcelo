@@ -45,6 +45,19 @@ class ImageApiTest extends ApiTestSupport {
     }
 
     @Test
+    @DisplayName("revalidação com If-None-Match devolve 304 sem corpo")
+    void notModified() throws Exception {
+        String filename = json.readTree(upload("foto.jpg", "image/jpeg", image("jpg", 50, 50, false), true)
+                .andReturn().getResponse().getContentAsString()).get("filename").asText();
+        String etag = mvc.perform(get("/api/images/{f}", filename)).andExpect(status().isOk())
+                .andReturn().getResponse().getHeader("ETag");
+
+        mvc.perform(get("/api/images/{f}", filename).header("If-None-Match", etag))
+                .andExpect(status().isNotModified())
+                .andExpect(content().bytes(new byte[0]));
+    }
+
+    @Test
     @DisplayName("PNG com transparência continua PNG")
     void uploadPngWithAlpha() throws Exception {
         upload("logo.png", "image/png", image("png", 64, 64, true), true)

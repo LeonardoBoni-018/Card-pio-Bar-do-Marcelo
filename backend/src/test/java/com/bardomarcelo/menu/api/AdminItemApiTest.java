@@ -14,8 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bardomarcelo.menu.category.Category;
 import com.bardomarcelo.menu.item.MenuItem;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -152,8 +150,8 @@ class AdminItemApiTest extends ApiTestSupport {
                         .contentType(MediaType.APPLICATION_JSON).content(write(update)))
                 .andExpect(status().isOk());
 
-        assertThat(Files.exists(Path.of(UPLOAD_DIR.toString(), first))).isFalse();
-        assertThat(Files.exists(Path.of(UPLOAD_DIR.toString(), second))).isTrue();
+        assertThat(images.exists(first)).isFalse();
+        assertThat(images.exists(second)).isTrue();
     }
 
     @Test
@@ -184,7 +182,7 @@ class AdminItemApiTest extends ApiTestSupport {
                 .andExpect(status().isNoContent());
         mvc.perform(get("/api/admin/items/{id}", id).header("Authorization", bearer()))
                 .andExpect(status().isNotFound());
-        assertThat(Files.exists(Path.of(UPLOAD_DIR.toString(), filename))).isFalse();
+        assertThat(images.exists(filename)).isFalse();
         mvc.perform(delete("/api/admin/items/{id}", id).header("Authorization", bearer()))
                 .andExpect(status().isNotFound());
     }

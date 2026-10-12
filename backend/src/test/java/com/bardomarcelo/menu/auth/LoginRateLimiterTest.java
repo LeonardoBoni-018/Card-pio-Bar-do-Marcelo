@@ -15,7 +15,7 @@ class LoginRateLimiterTest {
         return new LoginRateLimiter(new AppProperties(
                 new AppProperties.Jwt("x".repeat(32), Duration.ofHours(1)),
                 new AppProperties.Admin("admin", "12345678"),
-                new AppProperties.Storage("uploads", 1200),
+                new AppProperties.Storage(1200),
                 new AppProperties.Cors(List.of()),
                 new AppProperties.Login(max, window)));
     }

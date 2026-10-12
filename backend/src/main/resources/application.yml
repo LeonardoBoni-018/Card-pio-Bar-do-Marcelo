@@ -1,9 +1,19 @@
 spring:
   application.name: menu-api
   datasource:
+    # DB_URL aceita 'jdbc:postgresql://...' ou a string do Neon ('postgresql://user:senha@host/db?sslmode=require');
+    # veja DatabaseUrlEnvironmentPostProcessor.
     url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    username: ${DB_USER:}
+    password: ${DB_PASSWORD:}
+    hikari:
+      # Neon (plano free) suspende o compute após ~5 min parado e derruba as conexões: pool pequeno,
+      # sem conexões ociosas e vida curta evitam usar conexões mortas; timeout cobre o "cold start".
+      maximum-pool-size: ${DB_POOL_SIZE:5}
+      minimum-idle: 0
+      idle-timeout: 60000
+      max-lifetime: 240000
+      connection-timeout: 30000
   jpa:
     open-in-view: false
     hibernate.ddl-auto: validate
@@ -22,6 +32,8 @@ spring:
     caffeine.spec: maximumSize=100,expireAfterWrite=10m
 
 server:
+  port: ${PORT:8080}                  # o Render define PORT
+  forward-headers-strategy: native    # atrás do proxy do Render, usa o IP real (X-Forwarded-For)
   compression:
     enabled: true
     mime-types: application/json
@@ -41,10 +53,9 @@ app:
     username: ${APP_ADMIN_USER}
     password: ${APP_ADMIN_PASSWORD}
   storage:
-    dir: ${APP_UPLOAD_DIR:uploads}
     max-dimension: 1200
   cors:
-    allowed-origins: ${APP_CORS_ORIGINS:http://localhost:5173}
+    allowed-origins: ${APP_CORS_ORIGINS:http://localhost:5173}  # separadas por vírgula; aceita curingas (https://app-*.vercel.app)
   login:
     max-failures: 5
     block-duration: 15m

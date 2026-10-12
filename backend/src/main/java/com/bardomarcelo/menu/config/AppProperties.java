@@ -26,7 +26,7 @@ public record AppProperties(
     public record Admin(@NotBlank String username,
                         @NotBlank @Size(min = 8, message = "a senha do admin precisa ter ao menos 8 caracteres") String password) {}
 
-    public record Storage(@NotBlank String dir, @Min(200) int maxDimension) {}
+    public record Storage(@Min(200) int maxDimension) {}
 
     public record Cors(@NotNull List<String> allowedOrigins) {}
 

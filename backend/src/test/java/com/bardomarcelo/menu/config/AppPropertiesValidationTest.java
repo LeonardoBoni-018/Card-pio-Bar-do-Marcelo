@@ -18,7 +18,7 @@ class AppPropertiesValidationTest {
         return new AppProperties(
                 new AppProperties.Jwt(secret, Duration.ofHours(1)),
                 new AppProperties.Admin("admin", adminPassword),
-                new AppProperties.Storage("uploads", 1200),
+                new AppProperties.Storage(1200),
                 new AppProperties.Cors(List.of("http://localhost:5173")),
                 new AppProperties.Login(5, Duration.ofMinutes(15)));
     }

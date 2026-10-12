@@ -1,0 +1,23 @@
+# Blueprint do Render (New → Blueprint). Cria a API; o banco é o Neon (variável DB_URL).
+services:
+  - type: web
+    name: bar-do-marcelo-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free                      # troque por 'starter' para a API não "dormir" após 15 min sem acesso
+    region: ohio                    # escolha a mais próxima da região do seu banco no Neon (us-east-2 = Ohio)
+    # Liveness NÃO consulta o banco: assim o health check não mantém o Neon acordado o tempo todo.
+    healthCheckPath: /actuator/health/liveness
+    autoDeploy: true
+    envVars:
+      - key: DB_URL                 # cole a string do Neon (conexão DIRETA, sem "-pooler")
+        sync: false
+      - key: APP_JWT_SECRET
+        generateValue: true         # o Render gera um segredo aleatório forte
+      - key: APP_ADMIN_USER
+        sync: false
+      - key: APP_ADMIN_PASSWORD
+        sync: false
+      - key: APP_CORS_ORIGINS       # ex.: https://cardapio-bar-marcelo.vercel.app
+        sync: false

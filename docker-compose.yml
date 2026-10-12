@@ -1,4 +1,5 @@
-# Sobe PostgreSQL + API. Copie .env.example para .env e preencha os segredos.
+# Ambiente LOCAL: PostgreSQL + API. Copie .env.example para .env e preencha os segredos.
+# (Em produção o banco é o Neon e a API roda no Render — veja render.yaml e backend/README.md.)
 services:
   db:
     image: postgres:16-alpine
@@ -27,11 +28,8 @@ services:
       APP_ADMIN_USER: ${APP_ADMIN_USER:?defina APP_ADMIN_USER}
       APP_ADMIN_PASSWORD: ${APP_ADMIN_PASSWORD:?defina APP_ADMIN_PASSWORD (min. 8 caracteres)}
       APP_CORS_ORIGINS: ${APP_CORS_ORIGINS:-http://localhost:5173}
-    volumes:
-      - uploads:/data/uploads
     ports:
       - "8080:8080"
 
 volumes:
   pgdata:
-  uploads:

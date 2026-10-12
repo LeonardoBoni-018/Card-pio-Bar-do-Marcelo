@@ -66,7 +66,7 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource(AppProperties props) {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(props.cors().allowedOrigins());
+        cfg.setAllowedOriginPatterns(props.cors().allowedOrigins()); // aceita padrões, ex.: https://cardapio-*.vercel.app
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "If-None-Match"));
         cfg.setExposedHeaders(List.of("ETag", "Location"));

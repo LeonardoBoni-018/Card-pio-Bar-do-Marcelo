@@ -4,37 +4,32 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.bardomarcelo.menu.common.InvalidImageException;
-import com.bardomarcelo.menu.config.AppProperties;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.List;
 import javax.imageio.ImageIO;
-import org.junit.jupiter.api.BeforeEach;
+import com.bardomarcelo.menu.config.AppProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-@DisplayName("ImageStorageService")
+@DataJpaTest
+@ActiveProfiles("test")
+@EnableConfigurationProperties(AppProperties.class)
+@Import(ImageStorageService.class)
+@DisplayName("ImageStorageService (armazenamento no banco)")
 class ImageStorageServiceTest {
 
-    @TempDir Path dir;
-    ImageStorageService storage;
-
-    @BeforeEach
-    void setUp() {
-        AppProperties props = new AppProperties(
-                new AppProperties.Jwt("x".repeat(32), Duration.ofHours(1)),
-                new AppProperties.Admin("admin", "12345678"),
-                new AppProperties.Storage(dir.toString(), 500),
-                new AppProperties.Cors(List.of()),
-                new AppProperties.Login(5, Duration.ofMinutes(15)));
-        storage = new ImageStorageService(props);
-    }
+    @Autowired ImageStorageService storage;
+    @Autowired StoredImageRepository repository;
 
     private static byte[] encode(String format, BufferedImage img) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -46,31 +41,54 @@ class ImageStorageServiceTest {
         return new MockMultipartFile("file", "x.png", "image/png", bytes);
     }
 
+    private static BufferedImage decode(byte[] data) throws IOException {
+        return ImageIO.read(new ByteArrayInputStream(data));
+    }
+
     @Test
-    @DisplayName("grava com nome UUID e remove metadados; arquivo passa a existir")
-    void storesWithRandomName() throws IOException {
+    @DisplayName("grava no banco com nome UUID e content-type correto")
+    void storesInDatabase() throws IOException {
         String name = storage.store(file(encode("png", new BufferedImage(50, 50, BufferedImage.TYPE_INT_RGB))));
 
-        assertThat(name).matches(ImageStorageService.FILENAME.pattern());
+        assertThat(name).matches(ImageStorageService.FILENAME.pattern()).endsWith(".jpg");
+        StoredImage stored = storage.find(name).orElseThrow();
+        assertThat(stored.getContentType()).isEqualTo("image/jpeg");
+        assertThat(stored.getData()).isNotEmpty();
         assertThat(storage.exists(name)).isTrue();
-        assertThat(Files.exists(dir.resolve(name))).isTrue();
+    }
+
+    @Test
+    @DisplayName("PNG com transparência é mantido como PNG")
+    void keepsAlphaAsPng() throws IOException {
+        String name = storage.store(file(encode("png", new BufferedImage(40, 40, BufferedImage.TYPE_INT_ARGB))));
+        assertThat(name).endsWith(".png");
+        assertThat(storage.find(name).orElseThrow().getContentType()).isEqualTo("image/png");
     }
 
     @Test
     @DisplayName("reduz imagens maiores que o limite mantendo a proporção")
     void shrinks() throws IOException {
-        String name = storage.store(file(encode("png", new BufferedImage(1000, 400, BufferedImage.TYPE_INT_RGB))));
-        BufferedImage stored = ImageIO.read(dir.resolve(name).toFile());
-        assertThat(stored.getWidth()).isEqualTo(500);
-        assertThat(stored.getHeight()).isEqualTo(200);
+        String name = storage.store(file(encode("png", new BufferedImage(3000, 1500, BufferedImage.TYPE_INT_RGB))));
+        BufferedImage stored = decode(storage.find(name).orElseThrow().getData());
+        assertThat(stored.getWidth()).isEqualTo(1200);
+        assertThat(stored.getHeight()).isEqualTo(600);
+    }
+
+    @Test
+    @DisplayName("foto muito grande (48 MP) é lida com subamostragem e termina dentro do limite")
+    void hugePhotoIsSubsampled() throws IOException {
+        // 1-bit por pixel: ~6 MB em memória, mas 48 megapixels "lógicos" — força o caminho de subamostragem
+        BufferedImage huge = new BufferedImage(8000, 6000, BufferedImage.TYPE_BYTE_BINARY);
+        String name = storage.store(file(encode("png", huge)));
+        BufferedImage stored = decode(storage.find(name).orElseThrow().getData());
+        assertThat(Math.max(stored.getWidth(), stored.getHeight())).isEqualTo(1200);
     }
 
     @Test
     @DisplayName("não amplia imagens pequenas")
     void doesNotEnlarge() throws IOException {
         String name = storage.store(file(encode("png", new BufferedImage(120, 80, BufferedImage.TYPE_INT_RGB))));
-        BufferedImage stored = ImageIO.read(dir.resolve(name).toFile());
-        assertThat(stored.getWidth()).isEqualTo(120);
+        assertThat(decode(storage.find(name).orElseThrow().getData()).getWidth()).isEqualTo(120);
     }
 
     @Test
@@ -81,7 +99,7 @@ class ImageStorageServiceTest {
     }
 
     @Test
-    @DisplayName("rejeita vazio, nulo, texto, GIF e arquivo truncado")
+    @DisplayName("rejeita vazio, nulo, texto, GIF, truncado e resolução absurda — sem gravar nada")
     void rejectsInvalid() throws IOException {
         assertThatThrownBy(() -> storage.store(null)).isInstanceOf(InvalidImageException.class);
         assertThatThrownBy(() -> storage.store(file(new byte[0]))).isInstanceOf(InvalidImageException.class);
@@ -92,34 +110,47 @@ class ImageStorageServiceTest {
         byte[] png = encode("png", new BufferedImage(200, 200, BufferedImage.TYPE_INT_RGB));
         byte[] truncated = java.util.Arrays.copyOf(png, 30);
         assertThatThrownBy(() -> storage.store(file(truncated))).isInstanceOf(InvalidImageException.class);
-        assertThat(dir).isEmptyDirectory();
+        byte[] gigantic = encode("png", new BufferedImage(11000, 11000, BufferedImage.TYPE_BYTE_BINARY));
+        assertThatThrownBy(() -> storage.store(file(gigantic))).isInstanceOf(InvalidImageException.class)
+                .hasMessageContaining("resolução");
+        assertThat(repository.count()).isZero();
     }
 
     @Test
-    @DisplayName("resolve só aceita nomes no formato esperado (anti path traversal)")
-    void resolveGuards() {
-        assertThat(storage.resolve("../etc/passwd")).isNull();
-        assertThat(storage.resolve("..\\x.jpg")).isNull();
-        assertThat(storage.resolve(null)).isNull();
-        assertThat(storage.resolve("11111111-1111-1111-1111-111111111111.jpg")).isNotNull();
+    @DisplayName("nomes fora do formato esperado nunca chegam ao banco")
+    void nameGuards() {
+        assertThat(ImageStorageService.isValidName("../etc/passwd")).isFalse();
+        assertThat(ImageStorageService.isValidName(null)).isFalse();
+        assertThat(ImageStorageService.isValidName("11111111-1111-1111-1111-111111111111.jpg")).isTrue();
+        assertThat(storage.find("../x")).isEmpty();
         assertThat(storage.exists("../x")).isFalse();
+        storage.delete("../x"); // ignorado
     }
 
     @Test
-    @DisplayName("delete remove o arquivo e ignora nomes inválidos ou inexistentes")
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @DisplayName("delete remove a imagem (em transação própria) e ignora inexistentes")
     void delete() throws IOException {
         String name = storage.store(file(encode("png", new BufferedImage(20, 20, BufferedImage.TYPE_INT_RGB))));
-        storage.delete("../fora");
-        storage.delete("11111111-1111-1111-1111-111111111111.jpg");
-        storage.delete(name);
-        assertThat(storage.exists(name)).isFalse();
+        try {
+            storage.delete("11111111-1111-1111-1111-111111111111.jpg");
+            storage.delete(name);
+            assertThat(storage.exists(name)).isFalse();
+        } finally {
+            repository.deleteAll();
+        }
     }
 
     @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @DisplayName("deleteAfterCommit sem transação apaga na hora")
     void deleteAfterCommitWithoutTransaction() throws IOException {
         String name = storage.store(file(encode("png", new BufferedImage(20, 20, BufferedImage.TYPE_INT_RGB))));
-        storage.deleteAfterCommit(name);
-        assertThat(storage.exists(name)).isFalse();
+        try {
+            storage.deleteAfterCommit(name);
+            assertThat(storage.exists(name)).isFalse();
+        } finally {
+            repository.deleteAll();
+        }
     }
 }
