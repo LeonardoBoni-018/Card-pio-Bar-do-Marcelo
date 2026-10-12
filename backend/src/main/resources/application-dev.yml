@@ -6,6 +6,7 @@ spring:
     username: sa
     password: ""
 app:
+  cors.allowed-origins: http://localhost:5173,http://localhost:4173   # vite dev e vite preview (E2E)
   jwt.secret: dev-only-secret-dev-only-secret-dev-only-secret
   admin:
     username: admin

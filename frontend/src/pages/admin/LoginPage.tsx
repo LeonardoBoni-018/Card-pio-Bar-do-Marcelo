@@ -1,0 +1,99 @@
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router'
+import { z } from 'zod'
+import { login } from '../../api/endpoints'
+import { session, useIsAuthenticated } from '../../auth/session'
+import { MugIcon } from '../../components/MugIcon'
+import { Button } from '../../components/ui/Button'
+import { Field, describedBy, inputClass } from '../../components/ui/Field'
+
+const schema = z.object({
+  username: z.string().trim().min(1, 'Informe o usuário.'),
+  password: z.string().min(1, 'Informe a senha.'),
+})
+type Values = z.infer<typeof schema>
+
+export default function LoginPage() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const authenticated = useIsAuthenticated()
+  const [expired] = useState(() => session.consumeExpiredNotice())
+  const from = (location.state as { from?: string } | null)?.from ?? '/admin/items'
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Values>({ resolver: zodResolver(schema) })
+
+  const mutation = useMutation({
+    mutationFn: (values: Values) => login(values.username.trim(), values.password),
+    onSuccess: (data) => {
+      session.set(data.accessToken)
+      navigate(from, { replace: true })
+    },
+  })
+
+  if (authenticated) return <Navigate to={from} replace />
+
+  return (
+    <div className="grid min-h-screen place-items-center bg-gradient-to-br from-brasa-800 via-brasa-600 to-laranja-500 px-4 py-10">
+      <main className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl">
+        <div className="-mt-20 mb-4 flex justify-center">
+          <span className="rounded-full bg-brasa-600 p-3 ring-4 ring-white">
+            <MugIcon className="h-14 w-14" />
+          </span>
+        </div>
+        <h1 className="text-center text-2xl font-extrabold">Área do proprietário</h1>
+        <p className="mt-1 text-center text-tinta-500">Entre para editar o cardápio.</p>
+
+        {expired && !mutation.isError && (
+          <p role="status" className="mt-4 rounded-lg bg-laranja-100 px-3 py-2 text-sm font-semibold text-tinta-900">
+            Sua sessão expirou. Entre novamente.
+          </p>
+        )}
+        {mutation.isError && (
+          <p role="alert" className="mt-4 rounded-lg bg-brasa-50 px-3 py-2 text-sm font-semibold text-brasa-700">
+            {mutation.error.message}
+          </p>
+        )}
+
+        <form onSubmit={handleSubmit((values) => mutation.mutate(values))} noValidate className="mt-6 space-y-4">
+          <Field id="username" label="Usuário" error={errors.username?.message}>
+            <input
+              id="username"
+              autoComplete="username"
+              autoCapitalize="none"
+              aria-invalid={!!errors.username}
+              aria-describedby={describedBy('username', errors.username?.message)}
+              className={inputClass}
+              {...register('username')}
+            />
+          </Field>
+          <Field id="password" label="Senha" error={errors.password?.message}>
+            <input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              aria-invalid={!!errors.password}
+              aria-describedby={describedBy('password', errors.password?.message)}
+              className={inputClass}
+              {...register('password')}
+            />
+          </Field>
+          <Button type="submit" className="w-full" disabled={mutation.isPending}>
+            {mutation.isPending ? 'Entrando…' : 'Entrar'}
+          </Button>
+        </form>
+        <p className="mt-6 text-center text-sm">
+          <Link to="/" className="font-semibold text-ceu-700 underline underline-offset-4">
+            Voltar ao cardápio
+          </Link>
+        </p>
+      </main>
+    </div>
+  )
+}

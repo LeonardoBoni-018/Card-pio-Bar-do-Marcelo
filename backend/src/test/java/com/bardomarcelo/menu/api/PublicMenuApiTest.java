@@ -62,11 +62,11 @@ class PublicMenuApiTest extends ApiTestSupport {
     }
 
     @Test
-    @DisplayName("envia Cache-Control e ETag; revalidação devolve 304")
+    @DisplayName("sempre revalida (no-cache + ETag); revalidação devolve 304")
     void httpCaching() throws Exception {
         item("Chopp", "8.50", category("Cervejas", 1), true, false);
         String etag = mvc.perform(get("/api/menu"))
-                .andExpect(header().string("Cache-Control", containsString("max-age=30")))
+                .andExpect(header().string("Cache-Control", containsString("no-cache")))
                 .andExpect(header().exists("ETag"))
                 .andReturn().getResponse().getHeader("ETag");
 

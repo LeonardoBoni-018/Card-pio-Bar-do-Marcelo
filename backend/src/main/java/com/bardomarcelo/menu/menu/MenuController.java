@@ -1,6 +1,5 @@
 package com.bardomarcelo.menu.menu;
 
-import java.time.Duration;
 import java.util.List;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class MenuController {
 
-    private static final CacheControl BROWSER_CACHE = CacheControl.maxAge(Duration.ofSeconds(30)).cachePublic();
+    /** Sempre revalida (ETag → 304 sem corpo): o cliente nunca vê um cardápio defasado depois que o dono edita. */
+    private static final CacheControl REVALIDATE = CacheControl.noCache().cachePublic();
 
     private final MenuService service;
 
@@ -24,11 +24,11 @@ public class MenuController {
 
     @GetMapping("/menu")
     public ResponseEntity<List<MenuCategoryResponse>> menu() {
-        return ResponseEntity.ok().cacheControl(BROWSER_CACHE).body(service.getMenu());
+        return ResponseEntity.ok().cacheControl(REVALIDATE).body(service.getMenu());
     }
 
     @GetMapping("/items/{id}")
     public ResponseEntity<PublicItemResponse> item(@PathVariable Long id) {
-        return ResponseEntity.ok().cacheControl(BROWSER_CACHE).body(service.getItem(id));
+        return ResponseEntity.ok().cacheControl(REVALIDATE).body(service.getItem(id));
     }
 }
