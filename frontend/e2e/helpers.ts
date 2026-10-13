@@ -16,6 +16,6 @@ export async function expectNoA11yViolations(page: Page) {
 export async function login(page: Page, username = 'admin', password = 'admin12345') {
   await page.goto('/admin/login')
   await page.getByLabel('Usuário').fill(username)
-  await page.getByLabel('Senha').fill(password)
+  await page.getByLabel('Senha', { exact: true }).fill(password)
   await page.getByRole('button', { name: 'Entrar' }).click()
 }

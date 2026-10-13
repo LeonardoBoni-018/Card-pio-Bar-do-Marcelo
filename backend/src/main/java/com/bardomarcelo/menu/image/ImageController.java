@@ -37,22 +37,25 @@ public class ImageController {
 
     /**
      * Nomes são UUIDs e o conteúdo nunca muda, então navegador e CDN (Vercel) podem guardar por muito tempo;
-     * revalidações respondem 304 sem nem consultar o banco.
+     * revalidações respondem 304 sem nem consultar o banco. {@code ?size=thumb} devolve a miniatura (listas no celular).
      */
     @GetMapping("/api/images/{filename}")
-    public ResponseEntity<byte[]> download(@PathVariable String filename, WebRequest request) {
+    public ResponseEntity<byte[]> download(@PathVariable String filename,
+                                           @RequestParam(required = false) String size, WebRequest request) {
         if (!ImageStorageService.isValidName(filename)) {
             throw new NotFoundException("Imagem não encontrada.");
         }
-        String etag = "\"" + filename + "\"";
+        boolean thumb = "thumb".equals(size);
+        String etag = "\"" + filename + (thumb ? "-thumb" : "") + "\"";
         if (request.checkNotModified(etag)) {
             return null; // 304 já enviado
         }
         StoredImage image = storage.find(filename).orElseThrow(() -> new NotFoundException("Imagem não encontrada."));
+        byte[] body = thumb && image.getThumbnail() != null ? image.getThumbnail() : image.getData();
         return ResponseEntity.ok()
                 .cacheControl(IMMUTABLE)
                 .eTag(etag)
                 .contentType(MediaType.parseMediaType(image.getContentType()))
-                .body(image.getData());
+                .body(body);
     }
 }

@@ -89,6 +89,7 @@ describe('request', () => {
 describe('imageSrc', () => {
   it('prefixa a URL da API e aceita vazio', () => {
     expect(imageSrc('/api/images/a.jpg')).toBe('http://api.test/api/images/a.jpg')
+    expect(imageSrc('/api/images/a.jpg', 'thumb')).toBe('http://api.test/api/images/a.jpg?size=thumb')
     expect(imageSrc(null)).toBeNull()
     expect(imageSrc(undefined)).toBeNull()
   })

@@ -58,6 +58,24 @@ class ImageStorageServiceTest {
     }
 
     @Test
+    @DisplayName("gera miniatura de até 480 px, menor que a foto inteira")
+    void createsThumbnail() throws IOException {
+        String name = storage.store(file(encode("png", new BufferedImage(3000, 1500, BufferedImage.TYPE_INT_RGB))));
+        StoredImage stored = storage.find(name).orElseThrow();
+        BufferedImage thumb = decode(stored.getThumbnail());
+        assertThat(thumb.getWidth()).isEqualTo(480);
+        assertThat(thumb.getHeight()).isEqualTo(240);
+        assertThat(stored.getThumbnail().length).isLessThan(stored.getData().length);
+    }
+
+    @Test
+    @DisplayName("foto já pequena não precisa de miniatura própria")
+    void smallPhotoHasNoThumbnail() throws IOException {
+        String name = storage.store(file(encode("png", new BufferedImage(300, 200, BufferedImage.TYPE_INT_RGB))));
+        assertThat(storage.find(name).orElseThrow().getThumbnail()).isNull();
+    }
+
+    @Test
     @DisplayName("PNG com transparência é mantido como PNG")
     void keepsAlphaAsPng() throws IOException {
         String name = storage.store(file(encode("png", new BufferedImage(40, 40, BufferedImage.TYPE_INT_ARGB))));

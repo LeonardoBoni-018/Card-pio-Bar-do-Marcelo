@@ -23,6 +23,10 @@ public class StoredImage {
     @Column(nullable = false)
     private byte[] data;
 
+    @JdbcTypeCode(SqlTypes.VARBINARY)
+    @Column
+    private byte[] thumbnail;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -30,14 +34,21 @@ public class StoredImage {
     }
 
     public StoredImage(String filename, String contentType, byte[] data, Instant createdAt) {
+        this(filename, contentType, data, null, createdAt);
+    }
+
+    public StoredImage(String filename, String contentType, byte[] data, byte[] thumbnail, Instant createdAt) {
         this.filename = filename;
         this.contentType = contentType;
         this.data = data;
+        this.thumbnail = thumbnail;
         this.createdAt = createdAt;
     }
 
     public String getFilename() { return filename; }
     public String getContentType() { return contentType; }
     public byte[] getData() { return data; }
+    /** Miniatura, ou {@code null} em fotos antigas. */
+    public byte[] getThumbnail() { return thumbnail; }
     public Instant getCreatedAt() { return createdAt; }
 }

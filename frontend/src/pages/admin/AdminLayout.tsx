@@ -1,14 +1,28 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { NavLink, Outlet, useNavigate } from 'react-router'
+import type { ReactNode } from 'react'
+import { NavLink, Outlet, useMatch, useNavigate } from 'react-router'
 import { session } from '../../auth/session'
-import { MugIcon } from '../../components/MugIcon'
+import { LogoName } from '../../components/Logo'
 
-const link = ({ isActive }: { isActive: boolean }) =>
-  `flex min-h-11 items-center rounded-lg px-4 text-sm font-bold ${isActive ? 'bg-laranja-500 text-tinta-900' : 'text-white hover:bg-white/15'}`
+const Icon = ({ children }: { children: ReactNode }) => (
+  <svg viewBox="0 0 24 24" className="size-6 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    {children}
+  </svg>
+)
 
+const itemClass = (active: boolean) =>
+  `flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-xs font-bold md:min-h-11 md:flex-row md:justify-start md:gap-3 md:rounded-lg md:px-4 md:text-sm ${
+    active ? 'bg-laranja-100 text-brasa-800' : 'text-tinta-700 active:bg-brasa-50 md:hover:bg-brasa-50'
+  }`
+
+/**
+ * Celular: barra do logo no topo e navegação fixa embaixo, ao alcance do polegar.
+ * Computador: menu lateral. Uma única navegação no HTML, só muda a posição.
+ */
 export function AdminLayout() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const isForm = Boolean(useMatch('/admin/items/:id')) // /new também casa; o formulário tem barra de salvar própria
 
   const logout = () => {
     session.clear()
@@ -17,31 +31,45 @@ export function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen md:grid md:grid-cols-[15rem_1fr]">
-      <aside className="bg-tinta-900 px-4 py-4 text-white md:sticky md:top-0 md:h-screen md:py-6">
-        <div className="mb-4 flex items-center gap-3">
-          <MugIcon className="h-10 w-10" />
-          <div>
-            <p className="font-display text-xl leading-none">Bar do Marcelo</p>
-            <p className="text-xs text-tinta-300">Painel do proprietário</p>
-          </div>
-        </div>
-        <nav aria-label="Painel" className="flex flex-wrap gap-1 md:flex-col">
-          <NavLink to="/admin/items" className={link}>
-            Itens do cardápio
-          </NavLink>
-          <NavLink to="/admin/categories" className={link}>
-            Categorias
-          </NavLink>
-          <a href="/" target="_blank" rel="noreferrer" className={link({ isActive: false })}>
-            Ver cardápio (nova aba)
-          </a>
-          <button type="button" onClick={logout} className={`${link({ isActive: false })} text-left md:mt-6`}>
-            Sair
-          </button>
-        </nav>
-      </aside>
-      <main className="min-w-0 px-4 py-6 md:px-8">
+    <div className="min-h-dvh md:grid md:h-dvh md:grid-cols-[15rem_1fr] md:grid-rows-[auto_1fr] md:overflow-hidden">
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-brasa-100 bg-white px-4 md:static md:col-start-1 md:row-start-1 md:block md:h-auto md:border-r md:px-5 md:py-6">
+        <LogoName className="h-9 w-auto md:h-16" />
+        <p className="text-sm font-bold text-tinta-500 md:mt-2">Painel do proprietário</p>
+      </header>
+
+      <nav
+        aria-label="Painel"
+        className={`fixed inset-x-0 bottom-0 z-30 grid-cols-4 border-t border-brasa-100 bg-white pb-[env(safe-area-inset-bottom)] md:static md:col-start-1 md:row-start-2 md:flex md:flex-col md:gap-1 md:border-r md:border-t-0 md:p-3 ${isForm ? 'hidden md:flex' : 'grid'}`}
+      >
+        <NavLink to="/admin/items" className={({ isActive }) => itemClass(isActive)}>
+          <Icon>
+            <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+          </Icon>
+          Itens
+        </NavLink>
+        <NavLink to="/admin/categories" className={({ isActive }) => itemClass(isActive)}>
+          <Icon>
+            <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z" />
+            <path d="M7.5 7.5h.01" />
+          </Icon>
+          Categorias
+        </NavLink>
+        <a href="/" target="_blank" rel="noreferrer" className={itemClass(false)}>
+          <Icon>
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+            <circle cx="12" cy="12" r="3" />
+          </Icon>
+          Cardápio
+        </a>
+        <button type="button" onClick={logout} className={`${itemClass(false)} md:mt-4`}>
+          <Icon>
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+          </Icon>
+          Sair
+        </button>
+      </nav>
+
+      <main className="min-w-0 px-4 pb-28 pt-5 md:col-start-2 md:row-span-2 md:row-start-1 md:overflow-y-auto md:px-8 md:pb-10 md:pt-8">
         <Outlet />
       </main>
     </div>

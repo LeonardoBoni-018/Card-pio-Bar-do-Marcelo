@@ -58,6 +58,39 @@ class ImageApiTest extends ApiTestSupport {
     }
 
     @Test
+    @DisplayName("?size=thumb devolve a miniatura (menor), com ETag próprio e 304")
+    void thumbnail() throws Exception {
+        String filename = json.readTree(upload("grande.png", "image/png", image("png", 3000, 2000, false), true)
+                .andReturn().getResponse().getContentAsString()).get("filename").asText();
+
+        byte[] full = mvc.perform(get("/api/images/{f}", filename)).andReturn().getResponse().getContentAsByteArray();
+        var thumbResponse = mvc.perform(get("/api/images/{f}", filename).param("size", "thumb"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", containsString("immutable")))
+                .andReturn().getResponse();
+        BufferedImage thumb = ImageIO.read(new ByteArrayInputStream(thumbResponse.getContentAsByteArray()));
+        assertThat(thumb.getWidth()).isEqualTo(480);
+        assertThat(thumbResponse.getContentAsByteArray().length).isLessThan(full.length);
+
+        String etag = thumbResponse.getHeader("ETag");
+        assertThat(etag).contains("-thumb");
+        mvc.perform(get("/api/images/{f}", filename).param("size", "thumb").header("If-None-Match", etag))
+                .andExpect(status().isNotModified());
+    }
+
+    @Test
+    @DisplayName("foto antiga sem miniatura: ?size=thumb devolve a foto inteira")
+    void thumbnailFallsBackToFullImage() throws Exception {
+        String legacy = "99999999-9999-9999-9999-999999999999.jpg";
+        byte[] data = image("jpg", 100, 100, false);
+        storedImages.save(new com.bardomarcelo.menu.image.StoredImage(legacy, "image/jpeg", data, java.time.Instant.now()));
+
+        byte[] body = mvc.perform(get("/api/images/{f}", legacy).param("size", "thumb"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
+        assertThat(body).isEqualTo(data);
+    }
+
+    @Test
     @DisplayName("PNG com transparência continua PNG")
     void uploadPngWithAlpha() throws Exception {
         upload("logo.png", "image/png", image("png", 64, 64, true), true)

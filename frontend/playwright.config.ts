@@ -6,12 +6,15 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
   workers: 1, // os testes compartilham o mesmo banco (H2 em memória da API)
+  expect: { timeout: 10_000 }, // folga para a partida a frio da API/JVM no CI
   retries: CI ? 1 : 0,
   reporter: CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   use: { baseURL: 'http://localhost:4173', trace: 'retain-on-failure', locale: 'pt-BR' },
   projects: [
-    { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile', use: { ...devices['Pixel 5'] }, testMatch: /customer\.spec\.ts/ },
+    { name: 'desktop', use: { ...devices['Desktop Chrome'] }, testIgnore: /mobile\.spec\.ts/ },
+    { name: 'mobile', use: { ...devices['Pixel 5'] }, testMatch: /(customer|admin|mobile)\.spec\.ts/ },
+    // celular pequeno (iPhone SE: 375×667), no Chromium — o WebKit não vem instalado
+    { name: 'celular-pequeno', use: { ...devices['Pixel 5'], viewport: { width: 375, height: 667 } }, testMatch: /mobile\.spec\.ts/ },
   ],
   webServer: [
     {

@@ -29,8 +29,8 @@ test.describe('painel do proprietário', () => {
     await expect(page.getByText('Categoria “Sobremesas” criada.')).toBeVisible()
 
     // item novo com foto
-    await page.getByRole('link', { name: 'Itens do cardápio' }).click()
-    await page.getByRole('link', { name: 'Novo item' }).click()
+    await page.getByRole('link', { name: 'Itens', exact: true }).click()
+    await page.getByRole('link', { name: /Novo item/ }).click()
     await page.getByLabel('Nome').fill(ITEM)
     await page.getByLabel('Descrição').fill('Pudim de leite condensado com calda de caramelo')
     await page.getByLabel('Preço (R$)').fill('12,9')
@@ -76,7 +76,7 @@ test.describe('painel do proprietário', () => {
     await expect(page.getByText(/possui itens/)).toBeVisible()
 
     // excluir o item (com confirmação) e depois a categoria
-    await page.getByRole('link', { name: 'Itens do cardápio' }).click()
+    await page.getByRole('link', { name: 'Itens', exact: true }).click()
     await page.getByRole('button', { name: `Excluir ${ITEM}` }).click()
     await page.getByRole('dialog').getByRole('button', { name: 'Excluir' }).click()
     await expect(page.getByText(`“${ITEM}” foi excluído.`)).toBeVisible()

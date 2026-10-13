@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 export const inputClass =
-  'block w-full rounded-lg border border-tinta-300 bg-white px-3 py-2.5 text-base text-tinta-900 placeholder:text-tinta-500 aria-[invalid=true]:border-brasa-600 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-brasa-600 min-h-11'
+  'block w-full rounded-lg border border-tinta-300 bg-white px-3 py-2.5 text-base text-tinta-900 placeholder:text-tinta-500 aria-[invalid=true]:border-brasa-600 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-brasa-600 min-h-12 md:min-h-11'
 
 interface FieldProps {
   id: string

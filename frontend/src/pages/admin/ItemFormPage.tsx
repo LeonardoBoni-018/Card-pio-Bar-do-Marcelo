@@ -86,7 +86,7 @@ function ItemForm({ item, categories }: { item?: AdminItem; categories: Category
   const description = useWatch({ control, name: 'description' })
 
   return (
-    <form onSubmit={handleSubmit((values) => save.mutate(values))} noValidate className="mt-6 grid gap-6 md:grid-cols-[18rem_1fr]">
+    <form onSubmit={handleSubmit((values) => save.mutate(values))} noValidate className="mt-5 grid gap-6 md:grid-cols-[18rem_1fr]">
       <Controller
         control={control}
         name="imageFilename"
@@ -164,11 +164,12 @@ function ItemForm({ item, categories }: { item?: AdminItem; categories: Category
           />
         </div>
 
-        <div className="flex flex-wrap justify-end gap-3 border-t border-brasa-100 pt-5">
-          <Link to="/admin/items" className="inline-flex min-h-11 items-center rounded-lg px-4 py-2.5 text-sm font-bold text-ceu-700 hover:bg-brasa-50">
+        {/* no celular a barra de ações fica fixa embaixo: salvar está sempre ao alcance do polegar */}
+        <div className="fixed inset-x-0 bottom-0 z-30 flex gap-3 border-t border-brasa-100 bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 md:static md:justify-end md:border-t md:px-0 md:pb-0 md:pt-5">
+          <Link to="/admin/items" className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl text-base font-bold text-ceu-700 ring-1 ring-tinta-300 md:min-h-11 md:flex-none md:px-4 md:text-sm md:ring-0 md:hover:bg-brasa-50">
             Cancelar
           </Link>
-          <Button type="submit" disabled={save.isPending || uploading}>
+          <Button type="submit" className="flex-[2] md:flex-none" disabled={save.isPending || uploading}>
             {save.isPending ? 'Salvando…' : uploading ? 'Enviando foto…' : 'Salvar item'}
           </Button>
         </div>
@@ -185,6 +186,9 @@ export default function ItemFormPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
+      <Link to="/admin/items" className="inline-flex min-h-11 items-center text-base font-bold text-ceu-700 md:text-sm">
+        ← Itens do cardápio
+      </Link>
       <h1 className="text-3xl font-extrabold">{itemId ? 'Editar item' : 'Novo item'}</h1>
       {/* o formulário só aparece com tudo pronto: o <select> de categoria precisa das opções para mostrar o valor salvo */}
       {(categories.isPending || (itemId !== undefined && query.isPending)) && !categories.isError && !query.isError && <Spinner label="Carregando…" />}

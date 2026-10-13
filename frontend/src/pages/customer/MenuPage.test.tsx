@@ -15,11 +15,12 @@ describe('MenuPage (cliente)', () => {
 
     expect(await screen.findByRole('heading', { name: 'Cervejas' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Porções' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 1, name: 'Bar do Marcelo' })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Bar do Marcelo — Bar & Mercearia Planalto' })).toBeInTheDocument()
     const item = screen.getByRole('button', { name: /Cerveja Long Neck, R\$\s?9,00/ })
     expect(within(item).getByText('Destaque')).toBeInTheDocument()
     expect(within(item).getByText(/R\$\s?9,00/)).toBeInTheDocument()
-    expect(item.querySelector('img')).toHaveAttribute('src', 'http://api.test/api/images/a.jpg')
+    // a lista usa a miniatura leve (?size=thumb), não a foto inteira
+    expect(item.querySelector('img')).toHaveAttribute('src', 'http://api.test/api/images/a.jpg?size=thumb')
   })
 
   it('mostra um esqueleto enquanto carrega', () => {
@@ -98,9 +99,19 @@ describe('MenuPage (cliente)', () => {
     expect(await screen.findByRole('heading', { name: 'Cervejas' })).toBeInTheDocument()
   })
 
-  it('tem link discreto para a área do proprietário', async () => {
+  it('a página do cliente não tem nenhum link para a área do proprietário', async () => {
     serve()
     renderApp(<MenuPage />)
-    expect(await screen.findByRole('link', { name: 'Área do proprietário' })).toHaveAttribute('href', '/admin')
+    await screen.findByRole('heading', { name: 'Cervejas' })
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    expect(screen.queryByText(/proprietário/i)).not.toBeInTheDocument()
+  })
+
+  it('o detalhe do item mostra a foto inteira (não a miniatura)', async () => {
+    serve()
+    const user = userEvent.setup()
+    renderApp(<MenuPage />)
+    await user.click(await screen.findByRole('button', { name: /Cerveja Long Neck/ }))
+    expect(screen.getByRole('dialog').querySelector('img')).toHaveAttribute('src', 'http://api.test/api/images/a.jpg')
   })
 })

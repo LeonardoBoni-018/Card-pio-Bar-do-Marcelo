@@ -6,7 +6,7 @@ import { deleteItem, setAvailability } from '../../api/endpoints'
 import { keys, useAdminItems, useCategories } from '../../api/queries'
 import type { AdminItem, Page } from '../../api/types'
 import { ErrorState } from '../../components/ErrorState'
-import { MugIcon } from '../../components/MugIcon'
+import { LogoMark } from '../../components/Logo'
 import { Button, LinkButton } from '../../components/ui/Button'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { inputClass } from '../../components/ui/Field'
@@ -82,9 +82,15 @@ export default function ItemsPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-3xl font-extrabold">Itens do cardápio</h1>
-        <LinkButton to="/admin/items/new">Novo item</LinkButton>
+        {/* celular: botão flutuante ao alcance do polegar; computador: botão comum ao lado do título */}
+        <LinkButton
+          to="/admin/items/new"
+          className="fixed bottom-20 right-4 z-20 min-h-14 rounded-full px-6 shadow-lg md:static md:min-h-11 md:rounded-lg md:shadow-none"
+        >
+          + Novo item
+        </LinkButton>
       </div>
 
       {noCategories && (
@@ -143,42 +149,44 @@ export default function ItemsPage() {
         )}
 
         {items.data && items.data.content.length > 0 && (
-          <ul className="divide-y divide-brasa-100 rounded-2xl bg-white ring-1 ring-brasa-100">
+          <ul className="grid gap-3">
             {items.data.content.map((item) => {
-              const src = imageSrc(item.imageUrl)
+              const src = imageSrc(item.imageUrl, 'thumb')
               return (
-                <li key={item.id} className="flex flex-wrap items-center gap-x-4 gap-y-3 p-3 sm:p-4">
-                  {src ? (
-                    <img src={src} alt="" width={56} height={56} loading="lazy" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
-                  ) : (
-                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-laranja-500 to-brasa-600" aria-hidden="true">
-                      <MugIcon className="h-9 w-9" />
-                    </span>
-                  )}
-                  <div className="min-w-0 flex-1 basis-40">
-                    <p className={`truncate text-lg font-extrabold ${item.available ? '' : 'text-tinta-500 line-through'}`}>{item.name}</p>
-                    <p className="text-sm text-tinta-500">
-                      {item.categoryName} · <span className="font-bold text-brasa-700">{formatBRL(item.price)}</span>
-                      {item.featured && ' · Destaque'}
-                    </p>
+                <li key={item.id} className="rounded-2xl bg-white p-3 ring-1 ring-brasa-100 md:flex md:items-center md:gap-4">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    {src ? (
+                      <img src={src} alt="" width={64} height={64} loading="lazy" className="size-16 shrink-0 rounded-xl object-cover" />
+                    ) : (
+                      <span className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-laranja-100" aria-hidden="true">
+                        <LogoMark className="size-12 object-contain" />
+                      </span>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-lg font-extrabold leading-tight ${item.available ? '' : 'text-tinta-500 line-through'}`}>{item.name}</p>
+                      <p className="mt-0.5 text-sm text-tinta-500">
+                        {item.categoryName} · <span className="font-bold text-brasa-700">{formatBRL(item.price)}</span>
+                        {item.featured && ' · Destaque'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="mt-3 flex items-center gap-2 border-t border-brasa-100 pt-3 md:mt-0 md:border-0 md:pt-0">
                     <Switch
                       checked={item.available}
                       onChange={(available) => availability.mutate({ id: item.id, available })}
                       label={`Disponível: ${item.name}`}
                     />
-                    <span className="w-24 text-sm font-semibold text-tinta-700" aria-hidden="true">
+                    <span className="text-sm font-semibold text-tinta-700 md:w-24" aria-hidden="true">
                       {item.available ? 'No cardápio' : 'Indisponível'}
                     </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <LinkButton to={`/admin/items/${item.id}`} variant="secondary" aria-label={`Editar ${item.name}`}>
-                      Editar
-                    </LinkButton>
-                    <Button variant="ghost" onClick={() => setToDelete(item)} aria-label={`Excluir ${item.name}`}>
-                      Excluir
-                    </Button>
+                    <span className="ml-auto flex gap-2">
+                      <LinkButton to={`/admin/items/${item.id}`} variant="secondary" aria-label={`Editar ${item.name}`}>
+                        Editar
+                      </LinkButton>
+                      <Button variant="ghost" onClick={() => setToDelete(item)} aria-label={`Excluir ${item.name}`}>
+                        Excluir
+                      </Button>
+                    </span>
                   </div>
                 </li>
               )

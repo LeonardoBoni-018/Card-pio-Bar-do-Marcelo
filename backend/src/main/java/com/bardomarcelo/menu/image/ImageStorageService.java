@@ -43,6 +43,7 @@ public class ImageStorageService {
     public static final Pattern FILENAME = Pattern.compile("^[0-9a-f-]{36}\\.(jpg|png)$");
     private static final long MAX_PIXELS = 100_000_000L;
     private static final float JPEG_QUALITY = 0.85f;
+    static final int THUMBNAIL_DIMENSION = 480;
 
     private final StoredImageRepository repository;
     private final TransactionTemplate newTransaction;
@@ -66,11 +67,14 @@ public class ImageStorageService {
             throw new InvalidImageException("Nenhum arquivo enviado.");
         }
         try (InputStream in = file.getInputStream(); ImageInputStream iis = ImageIO.createImageInputStream(in)) {
-            BufferedImage image = shrink(readSafely(iis));
+            BufferedImage source = readSafely(iis);
+            BufferedImage image = shrink(source, maxDimension);
+            BufferedImage thumb = shrink(image, Math.min(THUMBNAIL_DIMENSION, maxDimension));
             boolean png = image.getColorModel().hasAlpha();
             String filename = UUID.randomUUID() + (png ? ".png" : ".jpg");
-            byte[] data = png ? encodePng(image) : encodeJpeg(image);
-            repository.save(new StoredImage(filename, png ? "image/png" : "image/jpeg", data, Instant.now()));
+            byte[] data = encode(image, png);
+            byte[] thumbnail = thumb == image ? null : encode(thumb, png); // já pequena: a própria foto serve de miniatura
+            repository.save(new StoredImage(filename, png ? "image/png" : "image/jpeg", data, thumbnail, Instant.now()));
             return filename;
         } catch (IOException e) {
             throw new UncheckedIOException("Falha ao processar a imagem", e);
@@ -138,7 +142,11 @@ public class ImageStorageService {
         }
     }
 
-    private BufferedImage shrink(BufferedImage src) {
+    private static byte[] encode(BufferedImage image, boolean png) throws IOException {
+        return png ? encodePng(image) : encodeJpeg(image);
+    }
+
+    private static BufferedImage shrink(BufferedImage src, int maxDimension) {
         int w = src.getWidth();
         int h = src.getHeight();
         boolean alpha = src.getColorModel().hasAlpha();

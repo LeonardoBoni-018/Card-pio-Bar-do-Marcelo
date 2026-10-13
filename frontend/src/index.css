@@ -33,6 +33,13 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
   :focus-visible {
     outline: 3px solid var(--color-ceu-600);
     outline-offset: 2px;
@@ -56,13 +63,12 @@
 }
 
 @utility skeleton {
-  background: linear-gradient(90deg, var(--color-brasa-100), #fff, var(--color-brasa-100));
-  background-size: 200% 100%;
-  animation: shimmer 1.4s linear infinite;
+  background: var(--color-brasa-100);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
 }
 
-@keyframes shimmer {
-  to {
-    background-position: -200% 0;
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.45;
   }
 }

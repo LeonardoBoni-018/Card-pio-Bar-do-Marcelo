@@ -41,7 +41,7 @@ describe('ItemsPage (proprietário)', () => {
     expect(screen.getByRole('switch', { name: 'Disponível: Chopp' })).toBeChecked()
     expect(screen.getByRole('switch', { name: 'Disponível: Batata Frita' })).not.toBeChecked()
     expect(screen.getByText('Batata Frita').closest('li')).toHaveTextContent(/Porções.*R\$\s?32,00.*Destaque/)
-    expect(screen.getByRole('link', { name: 'Novo item' })).toHaveAttribute('href', '/admin/items/new')
+    expect(screen.getByRole('link', { name: /Novo item/ })).toHaveAttribute('href', '/admin/items/new')
     expect(screen.getByRole('link', { name: 'Editar Chopp' })).toHaveAttribute('href', '/admin/items/1')
   })
 

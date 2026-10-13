@@ -5,7 +5,8 @@ test.describe('cardápio do cliente', () => {
   test('mostra categorias, itens e preços em reais', async ({ page }) => {
     await page.goto('/')
 
-    await expect(page.getByRole('heading', { level: 1, name: 'Bar do Marcelo' })).toBeVisible()
+    await expect(page.getByRole('img', { name: /Bar do Marcelo — Bar & Mercearia Planalto/ })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
     await expect(page.getByRole('heading', { name: 'Cervejas' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Porções' })).toBeVisible()
     await expect(page.getByRole('button', { name: /Batata Frita, R\$\s?32,00/ })).toBeVisible()

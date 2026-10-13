@@ -4,7 +4,7 @@ React 19 · TypeScript · Vite · Tailwind CSS 4 · React Router · TanStack Que
 
 | Rota | Quem | O que faz |
 |---|---|---|
-| `/` | Cliente | Cardápio por categoria, busca (sem acento), detalhes do item |
+| `/` | Cliente | Cardápio por categoria, busca (sem acento), detalhes do item. **Não tem link para o painel**: o proprietário acessa digitando `/admin` (guarde nos favoritos / adicione à tela inicial) |
 | `/admin/login` | Proprietário | Login |
 | `/admin/items`, `/admin/items/new`, `/admin/items/:id` | Proprietário | Listar, buscar, criar, editar, ocultar e excluir itens (com foto) |
 | `/admin/categories` | Proprietário | Criar, editar e excluir categorias |
@@ -37,9 +37,14 @@ Os testes E2E cobrem: cardápio (desktop e celular), busca, detalhes, login (cer
 
 `VITE_API_URL` só é necessário se você optar por chamar a API em outro domínio, sem o rewrite (exige ajustar `connect-src`/`img-src` da CSP).
 
+## Pensado para o celular (a maioria dos acessos)
+- **Cliente:** cabeçalho compacto com o logo, busca grande, categorias fixas no topo ao rolar (com rolagem lateral e "ímã" por chip), itens em cartões com foto de 96 px e **preço sempre visível** (sem quebrar linha), detalhes numa **gaveta colada no rodapé** (fecha com o polegar). Em telas maiores vira o cardápio de bar com pontilhado entre nome e preço.
+- **Proprietário:** navegação **fixa embaixo** (Itens · Categorias · Cardápio · Sair), botão flutuante **+ Novo item**, cada item num cartão com chave de disponibilidade grande, e no formulário uma **barra Cancelar/Salvar fixa no rodapé**. Alvos de toque ≥ 44 px (verificado nos testes E2E).
+- **Fotos:** a foto tirada na hora é **reduzida no aparelho** (máx. 1600 px, JPEG) antes de enviar — uma foto de câmera de 8 MB vira ~300 KB. A API ainda gera uma **miniatura de 480 px** usada nas listas, então a lista carrega rápido no 4G.
+- Instalável: ícone e manifesto, então dá para "Adicionar à tela inicial" (abre sem barra do navegador).
+
 ## Decisões
-- **Identidade:** vermelho do letreiro + laranja do toldo (listras no topo, como a fachada) + azul-céu só para foco e links. Textos sempre com contraste AA (laranja é usado em fundos/decoração; texto laranja não).
-- **Cardápio como cardápio de bar:** linhas com pontilhado entre nome e preço, em vez de cartões iguais.
+- **Identidade:** o **logo do letreiro** (vetorizado a partir da foto: `src/assets/logo-*.svg`, nítido em qualquer tamanho e sem fundo), vermelho do letreiro + laranja do toldo (listras no topo, como a fachada) + azul-céu só para foco e links. **Cores chapadas, sem degradês.** Textos com contraste AA (laranja só em fundos/decoração).
 - **Performance:** o painel é carregado sob demanda (`lazy`) — quem só olha o cardápio baixa ~97 kB (gzip), sem formulários/validação; imagens com `loading="lazy"` e dimensões fixas (sem salto de layout); TanStack Query com cache e revalidação.
 - **Segurança:** JWT em `localStorage` com expiração automática e logout em qualquer 401; React escapa todo conteúdo (sem `dangerouslySetInnerHTML`); CSP restritiva na Vercel; a validação final é sempre da API.
 - **Acessibilidade:** navegação por teclado, foco visível, `<dialog>` nativo, campos com rótulo e erro ligados por `aria-describedby`, `prefers-reduced-motion` respeitado, alvos de toque ≥ 44 px.

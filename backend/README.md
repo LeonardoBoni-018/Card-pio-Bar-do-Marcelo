@@ -44,7 +44,7 @@ Duas formas de o front falar com a API; recomendo a **primeira**:
 > **Atenção — CORS vale nas duas formas.** Mesmo com o rewrite, o navegador envia o cabeçalho `Origin` nas escritas (`POST/PUT/PATCH/DELETE`, ex.: login e salvar item), e a API as vê como vindas de outro site. Sem o domínio da Vercel em `APP_CORS_ORIGINS`, o login responde **403 "Você não tem permissão"**. Leituras (`GET`) funcionariam, o que engana no primeiro teste.
 
 ### Fotos
-Ficam **no banco** (tabela `image`), não em disco, porque o disco do Render é apagado a cada deploy. Cada foto é reduzida a 1200 px e recomprimida (algumas dezenas de KB); uploads abandonados há mais de 24 h são removidos por uma rotina diária para poupar o espaço do Neon free.
+Ficam **no banco** (tabela `image`), não em disco, porque o disco do Render é apagado a cada deploy. Cada foto é reduzida a 1200 px e recomprimida (algumas dezenas de KB), e ganha uma miniatura de 480 px (~15–30 KB); uploads abandonados há mais de 24 h são removidos por uma rotina diária para poupar o espaço do Neon free.
 
 ## Testes
 ```bash
@@ -56,7 +56,7 @@ mvn verify    # testes + relatório JaCoCo (target/site/jacoco) + exige ≥ 85% 
 |---|---|---|
 | GET | `/api/menu` | público — cardápio agrupado por categoria (só itens disponíveis) |
 | GET | `/api/items/{id}` | público |
-| GET | `/api/images/{arquivo}` | público |
+| GET | `/api/images/{arquivo}` | público — `?size=thumb` devolve a miniatura de 480 px (listas no celular) |
 | POST | `/api/auth/login` | público (limitado a 5 falhas/15 min por IP) |
 | GET/POST/PUT/DELETE | `/api/admin/items[/{id}]` | ADMIN — `GET` aceita `q`, `categoryId`, `page`, `size` |
 | PATCH | `/api/admin/items/{id}/availability` | ADMIN |

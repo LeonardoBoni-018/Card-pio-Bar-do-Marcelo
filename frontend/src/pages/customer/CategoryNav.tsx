@@ -18,8 +18,8 @@ export function CategoryNav({ categories, activeId, onSelect }: CategoryNavProps
   }, [activeId])
 
   return (
-    <nav aria-label="Categorias do cardápio" className="sticky top-0 z-20 border-b border-brasa-100 bg-fundo/95 backdrop-blur">
-      <div className="mx-auto flex max-w-3xl gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none]">
+    <nav aria-label="Categorias do cardápio" className="sticky top-0 z-20 border-b border-brasa-100 bg-white">
+      <div className="mx-auto flex max-w-3xl snap-x gap-2 overflow-x-auto px-4 py-2.5 [scrollbar-width:none]">
         {categories.map((category) => {
           const active = category.id === activeId
           return (
@@ -29,7 +29,7 @@ export function CategoryNav({ categories, activeId, onSelect }: CategoryNavProps
               type="button"
               aria-current={active ? 'true' : undefined}
               onClick={() => onSelect(category.id)}
-              className={`min-h-11 shrink-0 rounded-full px-5 text-sm font-extrabold transition-colors ${
+              className={`min-h-11 shrink-0 snap-start rounded-full px-5 text-base font-extrabold transition-colors ${
                 active ? 'bg-laranja-500 text-tinta-900' : 'bg-white text-tinta-700 ring-1 ring-tinta-300 hover:bg-laranja-100'
               }`}
             >

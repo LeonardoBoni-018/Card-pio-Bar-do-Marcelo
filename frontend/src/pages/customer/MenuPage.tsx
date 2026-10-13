@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router'
 import { useMenu } from '../../api/queries'
 import type { PublicItem } from '../../api/types'
 import { ErrorState } from '../../components/ErrorState'
@@ -14,7 +13,7 @@ function MenuSkeleton() {
     <div role="status" aria-label="Carregando cardápio" className="mx-auto max-w-3xl space-y-4 px-4 py-8">
       {Array.from({ length: 6 }, (_, i) => (
         <div key={i} className="flex gap-4">
-          <div className="skeleton h-22 w-22 shrink-0 rounded-xl" />
+          <div className="skeleton size-24 shrink-0 rounded-xl" />
           <div className="flex-1 space-y-3 py-1">
             <div className="skeleton h-5 w-2/3 rounded" />
             <div className="skeleton h-4 w-full rounded" />
@@ -60,7 +59,7 @@ export default function MenuPage() {
     <div className="min-h-screen">
       <BrandHeader />
       <main>
-        <div className="mx-auto max-w-3xl px-4 pt-6">
+        <div className="mx-auto max-w-3xl px-4 pb-4 pt-6">
           <label htmlFor="busca" className="sr-only">
             Buscar no cardápio
           </label>
@@ -91,9 +90,7 @@ export default function MenuPage() {
         {data && data.length > 0 && (
           <>
             {categories.length > 0 && (
-              <div className="mt-4">
-                <CategoryNav categories={categories} activeId={currentId} onSelect={goTo} />
-              </div>
+              <CategoryNav categories={categories} activeId={currentId} onSelect={goTo} />
             )}
             <div className="mx-auto max-w-3xl px-4 pb-16">
               {categories.length === 0 && (
@@ -106,7 +103,7 @@ export default function MenuPage() {
                   <h2 id={`titulo-${category.id}`} className="mb-3 border-l-8 border-laranja-500 pl-3 text-2xl font-extrabold">
                     {category.name}
                   </h2>
-                  <ul className="grid gap-1 sm:grid-cols-1">
+                  <ul className="grid gap-3 sm:gap-1">
                     {category.items.map((item) => (
                       <MenuItemRow key={item.id} item={item} onOpen={setSelected} />
                     ))}
@@ -117,13 +114,8 @@ export default function MenuPage() {
           </>
         )}
       </main>
-      <footer className="bg-tinta-900 px-4 py-8 text-center text-sm text-tinta-300">
+      <footer className="bg-tinta-900 px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-8 text-center text-sm text-tinta-300">
         <p>Bar &amp; Mercearia Planalto · Preços sujeitos a alteração</p>
-        <p className="mt-2">
-          <Link to="/admin" className="text-white underline underline-offset-4">
-            Área do proprietário
-          </Link>
-        </p>
       </footer>
       <ItemDialog item={selected} onClose={() => setSelected(null)} />
     </div>

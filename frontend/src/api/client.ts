@@ -73,7 +73,8 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   throw new ApiError(response.status, message, fieldErrors)
 }
 
-/** URL completa de uma foto (a API devolve caminhos relativos como /api/images/xxx.jpg). */
-export function imageSrc(url: string | null | undefined): string | null {
-  return url ? BASE + url : null
+/** URL completa de uma foto (a API devolve caminhos relativos como /api/images/xxx.jpg). `thumb` pede a miniatura leve (listas). */
+export function imageSrc(url: string | null | undefined, size?: 'thumb'): string | null {
+  if (!url) return null
+  return BASE + url + (size === 'thumb' ? '?size=thumb' : '')
 }

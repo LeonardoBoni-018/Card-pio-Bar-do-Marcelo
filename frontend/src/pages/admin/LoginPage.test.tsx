@@ -104,6 +104,23 @@ describe('LoginPage', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Sua sessão expirou')
   })
 
+  it('mostra o logo e deixa ver a senha digitada (evita erro de digitação no celular)', async () => {
+    const user = userEvent.setup()
+    renderApp(ui, { route: '/admin/login' })
+
+    expect(screen.getByRole('img', { name: 'Bar do Marcelo — Bar & Mercearia Planalto' })).toBeInTheDocument()
+    const password = screen.getByLabelText('Senha')
+    expect(password).toHaveAttribute('type', 'password')
+
+    await user.type(password, 'abc123')
+    await user.click(screen.getByRole('button', { name: 'Mostrar senha' }))
+    expect(password).toHaveAttribute('type', 'text')
+    expect(password).toHaveValue('abc123')
+
+    await user.click(screen.getByRole('button', { name: 'Ocultar senha' }))
+    expect(password).toHaveAttribute('type', 'password')
+  })
+
   it('quem já está logado é levado direto ao painel', () => {
     signIn()
     renderApp(ui, { route: '/admin/login' })

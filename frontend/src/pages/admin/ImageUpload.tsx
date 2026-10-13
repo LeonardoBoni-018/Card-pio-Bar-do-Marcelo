@@ -2,10 +2,12 @@ import { useMutation } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { imageSrc } from '../../api/client'
 import { uploadImage } from '../../api/endpoints'
-import { MugIcon } from '../../components/MugIcon'
+import { prepareImage } from '../../lib/image'
+import { LogoMark } from '../../components/Logo'
 import { Button } from '../../components/ui/Button'
 
-const MAX_BYTES = 5 * 1024 * 1024
+const MAX_BYTES = 5 * 1024 * 1024 // limite da API, depois de reduzida
+const MAX_ORIGINAL_BYTES = 40 * 1024 * 1024
 const ACCEPTED = ['image/jpeg', 'image/png']
 
 interface ImageUploadProps {
@@ -24,7 +26,11 @@ export function ImageUpload({ filename, currentUrl, onChange, onBusyChange }: Im
   const [dragging, setDragging] = useState(false)
 
   const upload = useMutation({
-    mutationFn: uploadImage,
+    mutationFn: async (file: File) => {
+      const ready = await prepareImage(file)
+      if (ready.size > MAX_BYTES) throw new Error('A foto passa de 5 MB mesmo depois de reduzida. Escolha outra.')
+      return uploadImage(ready)
+    },
     onSuccess: (data) => onChange(data.filename),
     onError: () => setPreview(null),
   })
@@ -36,7 +42,7 @@ export function ImageUpload({ filename, currentUrl, onChange, onBusyChange }: Im
     setLocalError(null)
     if (!file) return
     if (!ACCEPTED.includes(file.type)) return setLocalError('Formato não suportado. Envie uma foto JPG ou PNG.')
-    if (file.size > MAX_BYTES) return setLocalError('A foto passa de 5 MB. Escolha uma menor.')
+    if (file.size > MAX_ORIGINAL_BYTES) return setLocalError('A foto é grande demais. Escolha outra.')
     setPreview(URL.createObjectURL(file))
     upload.mutate(file)
   }
@@ -56,10 +62,10 @@ export function ImageUpload({ filename, currentUrl, onChange, onBusyChange }: Im
         className={`flex flex-col items-center gap-3 rounded-xl border-2 border-dashed p-4 text-center ${dragging ? 'border-brasa-600 bg-brasa-50' : 'border-laranja-300 bg-white'}`}
       >
         {shown ? (
-          <img src={shown} alt="Pré-visualização da foto do item" className="aspect-[4/3] w-full max-w-60 rounded-lg object-cover" />
+          <img src={shown} alt="Pré-visualização da foto do item" className="aspect-[4/3] w-full max-w-72 rounded-xl object-cover" />
         ) : (
-          <span className="flex aspect-[4/3] w-full max-w-60 items-center justify-center rounded-lg bg-gradient-to-br from-laranja-500 to-brasa-600" aria-hidden="true">
-            <MugIcon className="h-20 w-20" />
+          <span className="flex aspect-[4/3] w-full max-w-72 items-center justify-center rounded-xl bg-laranja-100" aria-hidden="true">
+            <LogoMark className="h-4/5 w-auto" />
           </span>
         )}
         <input
@@ -80,7 +86,7 @@ export function ImageUpload({ filename, currentUrl, onChange, onBusyChange }: Im
             </Button>
           )}
         </div>
-        <p className="text-sm text-tinta-500">JPG ou PNG, até 5 MB. Você também pode arrastar a foto para cá.</p>
+        <p className="text-sm text-tinta-500">JPG ou PNG. No celular você pode tirar a foto na hora; ela é reduzida automaticamente.</p>
       </div>
       {error && (
         <p role="alert" className="mt-2 text-sm font-semibold text-brasa-700">
