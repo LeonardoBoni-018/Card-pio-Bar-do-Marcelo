@@ -1,7 +1,20 @@
-import { request } from './client'
+import { fastReadsEnabled, request } from './client'
 import type { AdminItem, Category, ItemInput, ItemSearch, MenuCategory, Page, TokenResponse } from './types'
 
-export const getMenu = (signal?: AbortSignal) => request<MenuCategory[]>('/api/menu', { signal })
+/**
+ * Cardápio público. Com as leituras rápidas ligadas, tenta primeiro a função da Vercel (não dorme) e, se falhar
+ * por qualquer motivo (exceto cancelamento), cai na API do Render como antes.
+ */
+export async function getMenu(signal?: AbortSignal): Promise<MenuCategory[]> {
+  if (fastReadsEnabled()) {
+    try {
+      return await request<MenuCategory[]>('/api/fast/menu', { signal })
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') throw error
+    }
+  }
+  return request<MenuCategory[]>('/api/menu', { signal })
+}
 
 export const login = (username: string, password: string) =>
   request<TokenResponse>('/api/auth/login', { method: 'POST', json: { username, password } })

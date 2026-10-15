@@ -86,6 +86,14 @@ class SecurityApiTest extends ApiTestSupport {
     }
 
     @Test
+    @DisplayName("/api/ping é público, leve e nunca fica em cache")
+    void ping() throws Exception {
+        mvc.perform(get("/api/ping"))
+                .andExpect(status().isNoContent())
+                .andExpect(header().string("Cache-Control", containsString("no-store")));
+    }
+
+    @Test
     @DisplayName("CORS libera apenas a origem configurada")
     void cors() throws Exception {
         mvc.perform(options("/api/menu")

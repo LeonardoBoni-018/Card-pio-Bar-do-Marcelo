@@ -21,7 +21,7 @@ describe('useKeepAlive', () => {
     expect(fetchMock).not.toHaveBeenCalled()
     vi.advanceTimersByTime(60_000)
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock.mock.calls[0]).toEqual(['http://api.test/api/menu', { cache: 'no-store' }])
+    expect(fetchMock.mock.calls[0]).toEqual(['http://api.test/api/ping', { cache: 'no-store' }])
     vi.advanceTimersByTime(8 * 60_000)
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })

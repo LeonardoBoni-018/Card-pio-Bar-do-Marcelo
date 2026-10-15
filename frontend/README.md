@@ -48,8 +48,17 @@ No plano gratuito a API **desliga após 15 min sem acesso** e leva ~70 s para re
 - O cardápio **mostra na hora o que o aparelho viu da última vez** e atualiza em seguida (sempre busca a versão atual).
 - Na primeira visita do dia aparece o aviso *"Estamos acordando o cardápio…"* e o front **continua tentando** (até ~2–3 min) em vez de mostrar erro.
 - O login espera e repete sozinho enquanto o servidor acorda (só repete em 502/503/504 ou sem conexão; senha errada nunca é repetida).
-- Com o painel aberto e visível, uma chamada leve a cada 8 min mantém a API acordada durante a edição.
-- Para eliminar o problema de vez: plano pago do Render, ou ler o cardápio por fora da API que dorme.
+- Com o painel aberto e visível, uma chamada leve (`/api/ping`, 204) a cada 8 min mantém a API acordada durante a edição.
+
+### Leitura pública sem depender da API (Vercel Functions)
+O que o **cliente** vê (cardápio e fotos) é lido por duas funções da Vercel (`api/fast/menu.ts` e `api/fast/images/[filename].ts`) direto do Neon, com um usuário **somente leitura** (`cardapio_leitura`, só `SELECT` em categorias, itens e imagens; sem acesso a `admin_user`). Assim o cardápio abre na hora mesmo com a API dormindo.
+- Liga com a variável `VITE_FAST_READS=1` (build) e `MENU_DATABASE_URL` (connection string do usuário somente leitura, só no servidor da Vercel).
+- **Volta automática:** se a função falhar (503, rede, variável ausente), o front usa `/api/menu` na API do Render como antes; foto que não carrega troca para `/api/images/..`.
+- Cache na CDN: cardápio ~15 s (+ 60 s servindo versão anterior enquanto atualiza), então uma edição do dono aparece em até ~1 min; fotos são imutáveis (1 ano).
+- O `vercel.json` exclui `/api/fast/*` do encaminhamento para o Render. O painel do dono continua usando a API (a 1ª entrada do dia pode levar ~1 min).
+- Testes: unitários (banco falso) e de integração em PostgreSQL real, aplicando as mesmas migrações Flyway do back-end — defina `TEST_DATABASE_URL` para rodá-los (a CI já faz isso).
+- Observação: o plano Hobby da Vercel é para uso não comercial; para um negócio, considere o plano Pro.
+- Para eliminar de vez a espera do painel: plano pago do Render ou um pinger externo (UptimeRobot) em `/actuator/health/liveness` no horário de funcionamento.
 
 ## Decisões
 - **Identidade:** o **logo do letreiro** (vetorizado a partir da foto: `src/assets/logo-*.svg`, nítido em qualquer tamanho e sem fundo), vermelho do letreiro + laranja do toldo (listras no topo, como a fachada) + azul-céu só para foco e links. **Cores chapadas, sem degradês.** Textos com contraste AA (laranja só em fundos/decoração).

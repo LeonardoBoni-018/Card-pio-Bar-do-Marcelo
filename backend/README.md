@@ -55,6 +55,7 @@ mvn verify    # testes + relatório JaCoCo (target/site/jacoco) + exige ≥ 85% 
 | Método | Rota | Acesso |
 |---|---|---|
 | GET | `/api/menu` | público — cardápio agrupado por categoria (só itens disponíveis) |
+| GET | `/api/ping` | público — 204 sem corpo e sem banco (usado pelo painel para manter a API acordada) |
 | GET | `/api/items/{id}` | público |
 | GET | `/api/images/{arquivo}` | público — `?size=thumb` devolve a miniatura de 480 px (listas no celular) |
 | POST | `/api/auth/login` | público (limitado a 5 falhas/15 min por IP) |

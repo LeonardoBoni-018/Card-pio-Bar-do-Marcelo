@@ -11,8 +11,8 @@ export function useKeepAlive(): void {
   useEffect(() => {
     const ping = () => {
       if (document.visibilityState !== 'visible') return
-      // reaproveita o prefixo da API: imageSrc('/api/menu') = BASE + '/api/menu'
-      void fetch(imageSrc('/api/menu') ?? '/api/menu', { cache: 'no-store' }).catch(() => undefined)
+      // /api/ping é a chamada mais leve (204, sem banco); imageSrc só aplica o prefixo da API
+      void fetch(imageSrc('/api/ping') ?? '/api/ping', { cache: 'no-store' }).catch(() => undefined)
     }
     const timer = setInterval(ping, INTERVAL_MS)
     return () => clearInterval(timer)

@@ -1,12 +1,14 @@
-import { imageSrc } from '../../api/client'
+import { useState } from 'react'
+import { publicImageSrc } from '../../api/client'
 import type { PublicItem } from '../../api/types'
 import { LogoMark } from '../../components/Logo'
 import { formatBRL } from '../../lib/format'
 
 export function ItemPhoto({ item, className, thumb = false }: { item: PublicItem; className: string; thumb?: boolean }) {
-  const src = imageSrc(item.imageUrl, thumb ? 'thumb' : undefined)
+  const [fastFailed, setFastFailed] = useState(false)
+  const src = publicImageSrc(item.imageUrl, thumb ? 'thumb' : undefined, !fastFailed)
   return src ? (
-    <img src={src} alt="" width={192} height={192} loading="lazy" decoding="async" className={`object-cover ${className}`} />
+    <img src={src} onError={() => setFastFailed(true)} alt="" width={192} height={192} loading="lazy" decoding="async" className={`object-cover ${className}`} />
   ) : (
     <div className={`flex items-center justify-center bg-laranja-100 ${className}`} aria-hidden="true">
       <LogoMark className="h-4/5 w-4/5 object-contain" />
