@@ -52,7 +52,7 @@ No plano gratuito a API **desliga após 15 min sem acesso** e leva ~70 s para re
 
 ### Leitura pública sem depender da API (Vercel Functions)
 O que o **cliente** vê (cardápio e fotos) é lido por duas funções da Vercel (`api/fast/menu.ts` e `api/fast/images/[filename].ts`) direto do Neon, com um usuário **somente leitura** (`cardapio_leitura`, só `SELECT` em categorias, itens e imagens; sem acesso a `admin_user`). Assim o cardápio abre na hora mesmo com a API dormindo.
-- Liga com a variável `VITE_FAST_READS=1` (build) e `MENU_DATABASE_URL` (connection string do usuário somente leitura, só no servidor da Vercel).
+- Ligado por padrão (`VITE_FAST_READS=0` desliga no build); no servidor da Vercel precisa de `MENU_DATABASE_URL` (connection string do usuário somente leitura, só no servidor da Vercel).
 - **Volta automática:** se a função falhar (503, rede, variável ausente), o front usa `/api/menu` na API do Render como antes; foto que não carrega troca para `/api/images/..`.
 - Cache na CDN: cardápio ~15 s (+ 60 s servindo versão anterior enquanto atualiza), então uma edição do dono aparece em até ~1 min; fotos são imutáveis (1 ano).
 - O `vercel.json` exclui `/api/fast/*` do encaminhamento para o Render. O painel do dono continua usando a API (a 1ª entrada do dia pode levar ~1 min).

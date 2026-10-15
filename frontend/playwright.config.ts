@@ -25,7 +25,7 @@ export default defineConfig({
       reuseExistingServer: !CI,
     },
     {
-      command: 'npm run build && npm run preview',
+      command: 'VITE_FAST_READS=0 npm run build && npm run preview',
       url: 'http://localhost:4173',
       timeout: 120_000,
       reuseExistingServer: !CI,

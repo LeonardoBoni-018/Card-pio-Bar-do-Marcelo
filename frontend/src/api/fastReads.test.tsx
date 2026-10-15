@@ -14,6 +14,7 @@ afterEach(() => vi.unstubAllEnvs())
 
 describe('publicImageSrc', () => {
   it('desligado: foto vem direto da API', () => {
+    vi.stubEnv('VITE_FAST_READS', '0')
     expect(publicImageSrc('/api/images/a.jpg')).toBe(`${API}/api/images/a.jpg`)
     expect(publicImageSrc('/api/images/a.jpg', 'thumb')).toBe(`${API}/api/images/a.jpg?size=thumb`)
   })
@@ -28,6 +29,7 @@ describe('publicImageSrc', () => {
 
 describe('getMenu com leituras rápidas', () => {
   it('desligado: só usa /api/menu', async () => {
+    vi.stubEnv('VITE_FAST_READS', '0')
     const fast = vi.fn()
     server.use(http.get(`${API}/api/fast/menu`, () => (fast(), HttpResponse.json([]))), http.get(`${API}/api/menu`, () => HttpResponse.json(menu)))
     expect(await getMenu()).toEqual(menu)

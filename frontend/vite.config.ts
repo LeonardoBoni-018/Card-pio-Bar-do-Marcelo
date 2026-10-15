@@ -17,7 +17,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
-    env: { VITE_API_URL: 'http://api.test' },
+    env: { VITE_API_URL: 'http://api.test', VITE_FAST_READS: '0' }, // testes da interface falam só com a API simulada
     include: ['src/**/*.test.{ts,tsx}', 'api/**/*.test.ts'],
     coverage: {
       provider: 'v8',

@@ -84,8 +84,8 @@ export function imageSrc(url: string | null | undefined, size?: 'thumb'): string
   return BASE + url + (size === 'thumb' ? '?size=thumb' : '')
 }
 
-/** Leituras públicas pelas Vercel Functions (sempre acordadas) ligadas? Lido na hora para poder ser testado. */
-export const fastReadsEnabled = (): boolean => import.meta.env.VITE_FAST_READS === '1'
+/** Leituras públicas pelas Vercel Functions (sempre acordadas): ligadas por padrão, com volta automática; VITE_FAST_READS=0 desliga. */
+export const fastReadsEnabled = (): boolean => import.meta.env.VITE_FAST_READS !== '0'
 
 /** Foto do cardápio público: pela função da Vercel quando ligada (/api/fast/images/..); senão, direto da API. */
 export function publicImageSrc(url: string | null | undefined, size?: 'thumb', useFast = true): string | null {
