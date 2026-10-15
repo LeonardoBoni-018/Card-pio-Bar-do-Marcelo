@@ -3,8 +3,11 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { menu } from '../../test/fixtures'
 import { server } from '../../test/server'
+import { createQueryClient } from '../../App'
 import { API, renderApp } from '../../test/utils'
 import MenuPage from './MenuPage'
+
+const oldCache = (data: typeof menu) => localStorage.setItem('bdm.menu.v1', JSON.stringify({ at: Date.now() - 120_000, data }))
 
 const serve = (data = menu) => server.use(http.get(`${API}/api/menu`, () => HttpResponse.json(data)))
 
@@ -113,5 +116,48 @@ describe('MenuPage (cliente)', () => {
     renderApp(<MenuPage />)
     await user.click(await screen.findByRole('button', { name: /Cerveja Long Neck/ }))
     expect(screen.getByRole('dialog').querySelector('img')).toHaveAttribute('src', 'http://api.test/api/images/a.jpg')
+  })
+
+  it('mostra o aviso "acordando" e continua tentando até o servidor responder', async () => {
+    let calls = 0
+    server.use(
+      http.get(`${API}/api/menu`, () => (++calls <= 2 ? new HttpResponse(null, { status: 503 }) : HttpResponse.json(menu))),
+    )
+    renderApp(<MenuPage />, { queryClient: createQueryClient({ retryDelay: () => 20 }) })
+
+    expect(await screen.findByText(/Estamos acordando o cardápio/)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Cervejas' })).toBeInTheDocument()
+    expect(calls).toBe(3)
+    expect(screen.queryByText(/Estamos acordando/)).not.toBeInTheDocument()
+  })
+
+  it('quem já visitou vê o cardápio salvo na hora, mesmo com a API fora do ar', async () => {
+    oldCache(menu)
+    server.use(http.get(`${API}/api/menu`, () => new HttpResponse(null, { status: 503 })))
+    renderApp(<MenuPage />, { queryClient: createQueryClient({ retryDelay: () => 5 }) })
+
+    expect(await screen.findByRole('heading', { name: 'Cervejas' })).toBeInTheDocument() // sem esperar a API
+    expect(screen.queryByRole('status', { name: 'Carregando cardápio' })).not.toBeInTheDocument()
+    expect(await screen.findByText(/Mostrando o cardápio da sua última visita/, undefined, { timeout: 4000 })).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('mesmo com cardápio salvo agora há pouco, sempre busca a versão atual (o dono pode ter mudado algo)', async () => {
+    localStorage.setItem('bdm.menu.v1', JSON.stringify({ at: Date.now(), data: [{ id: 1, name: 'Antigo', items: [] }] }))
+    serve()
+    renderApp(<MenuPage />)
+
+    expect(await screen.findByRole('heading', { name: 'Cervejas' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Antigo' })).not.toBeInTheDocument()
+  })
+
+  it('atualiza o cardápio salvo quando a API responde e guarda a versão nova', async () => {
+    oldCache([{ id: 1, name: 'Antigo', items: [] }])
+    serve()
+    renderApp(<MenuPage />)
+
+    expect(await screen.findByRole('heading', { name: 'Cervejas' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Antigo' })).not.toBeInTheDocument()
+    expect(JSON.parse(localStorage.getItem('bdm.menu.v1')!).data).toEqual(menu)
   })
 })

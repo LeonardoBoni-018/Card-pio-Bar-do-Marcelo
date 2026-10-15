@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { getItem, getMenu, listCategories, searchItems } from './endpoints'
+import { readMenuCache, writeMenuCache } from '../lib/menuCache'
 import type { ItemSearch } from './types'
 
 export const keys = {
@@ -8,7 +9,25 @@ export const keys = {
   categories: ['admin', 'categories'] as const,
 }
 
-export const useMenu = () => useQuery({ queryKey: keys.menu, queryFn: ({ signal }) => getMenu(signal), staleTime: 30_000 })
+/**
+ * O cardápio mostra primeiro o que este aparelho viu da última vez (se houver) e atualiza em segundo plano:
+ * quem já visitou não espera a API acordar.
+ */
+export const useMenu = () => {
+  const cached = readMenuCache()
+  return useQuery({
+    queryKey: keys.menu,
+    queryFn: async ({ signal }) => {
+      const menu = await getMenu(signal)
+      writeMenuCache(menu)
+      return menu
+    },
+    staleTime: 30_000,
+    initialData: cached?.data,
+    // o cardápio guardado só serve para mostrar algo na hora: conta como "velho" e é sempre buscado de novo
+    initialDataUpdatedAt: 0,
+  })
+}
 
 export const useAdminItems = (params: ItemSearch) =>
   useQuery({ queryKey: [...keys.items, params], queryFn: () => searchItems(params), placeholderData: (previous) => previous })

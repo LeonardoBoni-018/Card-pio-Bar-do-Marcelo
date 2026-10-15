@@ -18,7 +18,7 @@ cd frontend && npm install && npm run dev                            # site em :
 
 ## Testes
 - Back: `cd backend && mvn verify` — 94 testes, cobertura ≥ 85% exigida.
-- Front: `cd frontend && npm test` (104 testes) e `npm run e2e` (Playwright contra a API real, em desktop, celular e celular pequeno).
+- Front: `cd frontend && npm test` (135 testes) e `npm run e2e` (Playwright contra a API real, em desktop, celular e celular pequeno).
 - CI no GitHub Actions: `.github/workflows/backend.yml` e `frontend.yml`.
 
 Capturas de tela: [docs/screenshots](docs/screenshots). Plano original: [PLANO.md](PLANO.md).

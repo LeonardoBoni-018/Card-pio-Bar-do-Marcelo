@@ -83,11 +83,17 @@ describe('rotas', () => {
 })
 
 describe('política de novas tentativas', () => {
-  it('não insiste em erros 4xx, mas tenta de novo falhas de rede', () => {
-    const retry = createQueryClient().getDefaultOptions().queries?.retry as (count: number, error: Error) => boolean
-    expect(retry(0, new ApiError(404, 'x'))).toBe(false)
-    expect(retry(0, new ApiError(0, 'rede'))).toBe(true)
-    expect(retry(0, new ApiError(500, 'x'))).toBe(true)
-    expect(retry(2, new ApiError(500, 'x'))).toBe(false)
+  const retry = () => createQueryClient().getDefaultOptions().queries?.retry as (count: number, error: Error) => boolean
+
+  it('nunca insiste em erros 4xx', () => {
+    expect(retry()(0, new ApiError(404, 'x'))).toBe(false)
+    expect(retry()(0, new ApiError(401, 'x'))).toBe(false)
+  })
+
+  it('insiste enquanto o servidor acorda (rede, 502/503/504) e em erros 5xx, mas não para sempre', () => {
+    expect(retry()(0, new ApiError(0, 'rede'))).toBe(true)
+    expect(retry()(5, new ApiError(503, 'x'))).toBe(true)
+    expect(retry()(0, new ApiError(500, 'x'))).toBe(true)
+    expect(retry()(12, new ApiError(503, 'x'))).toBe(false)
   })
 })

@@ -15,8 +15,10 @@ export function fakeJwt(expiresInSeconds = 3600): string {
 
 export const signIn = () => session.set(fakeJwt())
 
-export function renderApp(ui: ReactElement, { route = '/' }: { route?: string } = {}) {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
+export function renderApp(
+  ui: ReactElement,
+  { route = '/', queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } }) }: { route?: string; queryClient?: QueryClient } = {},
+) {
   return render(
     <QueryClientProvider client={queryClient}>
       <ToastProvider>

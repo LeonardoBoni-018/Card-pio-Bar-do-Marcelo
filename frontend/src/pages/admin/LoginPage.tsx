@@ -7,6 +7,8 @@ import { z } from 'zod'
 import { login } from '../../api/endpoints'
 import { session, useIsAuthenticated } from '../../auth/session'
 import { LogoFull } from '../../components/Logo'
+import { retryOnlyWhileWaking } from '../../lib/wake'
+import { useSlow } from '../../lib/useSlow'
 import { Button } from '../../components/ui/Button'
 import { Field, describedBy, inputClass } from '../../components/ui/Field'
 
@@ -32,11 +34,15 @@ export default function LoginPage() {
 
   const mutation = useMutation({
     mutationFn: (values: Values) => login(values.username.trim(), values.password),
+    // login é seguro de repetir: se o servidor está acordando, espera em vez de mostrar erro
+    retry: retryOnlyWhileWaking,
     onSuccess: (data) => {
       session.set(data.accessToken)
       navigate(from, { replace: true })
     },
   })
+
+  const slow = useSlow(mutation.isPending, 5000)
 
   if (authenticated) return <Navigate to={from} replace />
 
@@ -50,6 +56,11 @@ export default function LoginPage() {
         {expired && !mutation.isError && (
           <p role="status" className="mt-4 rounded-lg bg-laranja-100 px-3 py-2 text-sm font-semibold text-tinta-900">
             Sua sessão expirou. Entre novamente.
+          </p>
+        )}
+ {slow && mutation.isPending && (
+          <p role="status" className="mt-4 rounded-lg bg-laranja-100 px-3 py-2 text-sm font-semibold text-tinta-900">
+            Conectando ao servidor… Na primeira entrada do dia pode levar até 1 minuto. Aguarde, não feche a página.
           </p>
         )}
         {mutation.isError && (

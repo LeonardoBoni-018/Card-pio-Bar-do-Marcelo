@@ -69,7 +69,12 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   if (response.status === 401 && options.auth) {
     session.expire()
   }
-  const message = response.status >= 500 ? 'O servidor teve um problema. Tente novamente em instantes.' : (detail ?? FRIENDLY[response.status] ?? 'Algo deu errado.')
+  const waking = response.status === 502 || response.status === 503 || response.status === 504
+  const message = waking
+    ? 'O servidor está acordando. Isso leva cerca de 1 minuto; aguarde um pouco e tente de novo.'
+    : response.status >= 500
+      ? 'O servidor teve um problema. Tente novamente em instantes.'
+      : (detail ?? FRIENDLY[response.status] ?? 'Algo deu errado.')
   throw new ApiError(response.status, message, fieldErrors)
 }
 

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { NavLink, Outlet, useMatch, useNavigate } from 'react-router'
 import { session } from '../../auth/session'
 import { LogoName } from '../../components/Logo'
+import { useKeepAlive } from '../../lib/useKeepAlive'
 
 const Icon = ({ children }: { children: ReactNode }) => (
   <svg viewBox="0 0 24 24" className="size-6 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -22,6 +23,7 @@ const itemClass = (active: boolean) =>
 export function AdminLayout() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  useKeepAlive()
   const isForm = Boolean(useMatch('/admin/items/:id')) // /new também casa; o formulário tem barra de salvar própria
 
   const logout = () => {

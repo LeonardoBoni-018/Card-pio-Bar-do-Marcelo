@@ -43,6 +43,14 @@ Os testes E2E cobrem: cardápio (desktop e celular), busca, detalhes, login (cer
 - **Fotos:** a foto tirada na hora é **reduzida no aparelho** (máx. 1600 px, JPEG) antes de enviar — uma foto de câmera de 8 MB vira ~300 KB. A API ainda gera uma **miniatura de 480 px** usada nas listas, então a lista carrega rápido no 4G.
 - Instalável: ícone e manifesto, então dá para "Adicionar à tela inicial" (abre sem barra do navegador).
 
+## API "dormindo" (plano gratuito do Render)
+No plano gratuito a API **desliga após 15 min sem acesso** e leva ~70 s para religar. Para isso não parecer "site quebrado":
+- O cardápio **mostra na hora o que o aparelho viu da última vez** e atualiza em seguida (sempre busca a versão atual).
+- Na primeira visita do dia aparece o aviso *"Estamos acordando o cardápio…"* e o front **continua tentando** (até ~2–3 min) em vez de mostrar erro.
+- O login espera e repete sozinho enquanto o servidor acorda (só repete em 502/503/504 ou sem conexão; senha errada nunca é repetida).
+- Com o painel aberto e visível, uma chamada leve a cada 8 min mantém a API acordada durante a edição.
+- Para eliminar o problema de vez: plano pago do Render, ou ler o cardápio por fora da API que dorme.
+
 ## Decisões
 - **Identidade:** o **logo do letreiro** (vetorizado a partir da foto: `src/assets/logo-*.svg`, nítido em qualquer tamanho e sem fundo), vermelho do letreiro + laranja do toldo (listras no topo, como a fachada) + azul-céu só para foco e links. **Cores chapadas, sem degradês.** Textos com contraste AA (laranja só em fundos/decoração).
 - **Performance:** o painel é carregado sob demanda (`lazy`) — quem só olha o cardápio baixa ~97 kB (gzip), sem formulários/validação; imagens com `loading="lazy"` e dimensões fixas (sem salto de layout); TanStack Query com cache e revalidação.

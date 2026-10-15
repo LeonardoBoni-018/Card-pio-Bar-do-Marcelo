@@ -4,6 +4,8 @@ import { http, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router'
 import { session } from '../../auth/session'
 import { server } from '../../test/server'
+import { act, fireEvent } from '@testing-library/react'
+import { createQueryClient } from '../../App'
 import { API, fakeJwt, renderApp, signIn } from '../../test/utils'
 import LoginPage from './LoginPage'
 
@@ -125,5 +127,51 @@ describe('LoginPage', () => {
     signIn()
     renderApp(ui, { route: '/admin/login' })
     expect(screen.getByRole('heading', { name: 'Itens' })).toBeInTheDocument()
+  })
+
+  it('se o servidor está acordando (503), espera e tenta de novo sem mostrar erro', async () => {
+    let calls = 0
+    server.use(
+      http.post(`${API}/api/auth/login`, () =>
+        ++calls <= 2 ? new HttpResponse(null, { status: 503 }) : HttpResponse.json({ accessToken: fakeJwt(), tokenType: 'Bearer', expiresIn: 3600 }),
+      ),
+    )
+    const user = userEvent.setup()
+    renderApp(ui, { route: '/admin/login', queryClient: createQueryClient({ retryDelay: () => 10 }) })
+
+    await fill(user, 'marcelo', 'segredo123')
+
+    expect(await screen.findByRole('heading', { name: 'Itens' })).toBeInTheDocument()
+    expect(calls).toBe(3)
+    expect(session.getToken()).not.toBeNull()
+  })
+
+  it('senha errada (401) não é repetida', async () => {
+    let calls = 0
+    server.use(http.post(`${API}/api/auth/login`, () => (++calls, HttpResponse.json({ detail: 'Usuário ou senha inválidos.' }, { status: 401 }))))
+    const user = userEvent.setup()
+    renderApp(ui, { route: '/admin/login', queryClient: createQueryClient({ retryDelay: () => 10 }) })
+
+    await fill(user, 'marcelo', 'errada')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Usuário ou senha inválidos.')
+    expect(calls).toBe(1)
+  })
+
+  it('depois de 5 s sem resposta avisa que o servidor pode estar acordando', async () => {
+    server.use(http.post(`${API}/api/auth/login`, () => new Promise<Response>(() => {})))
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      renderApp(ui, { route: '/admin/login' })
+      fireEvent.change(screen.getByLabelText('Usuário'), { target: { value: 'marcelo' } })
+      fireEvent.change(screen.getByLabelText('Senha'), { target: { value: 'segredo123' } })
+      fireEvent.click(screen.getByRole('button', { name: 'Entrar' }))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5100)
+      })
+      expect(screen.getByRole('status')).toHaveTextContent('Conectando ao servidor')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

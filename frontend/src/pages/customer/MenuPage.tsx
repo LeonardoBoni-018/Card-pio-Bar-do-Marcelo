@@ -3,14 +3,20 @@ import { useMenu } from '../../api/queries'
 import type { PublicItem } from '../../api/types'
 import { ErrorState } from '../../components/ErrorState'
 import { filterMenu } from '../../lib/menu'
+import { useSlow } from '../../lib/useSlow'
 import { BrandHeader } from './BrandHeader'
 import { CategoryNav } from './CategoryNav'
 import { ItemDialog } from './ItemDialog'
 import { MenuItemRow } from './MenuItemRow'
 
-function MenuSkeleton() {
+function MenuSkeleton({ waking }: { waking: boolean }) {
   return (
     <div role="status" aria-label="Carregando cardápio" className="mx-auto max-w-3xl space-y-4 px-4 py-8">
+      {waking && (
+        <p className="rounded-2xl bg-laranja-100 px-4 py-3 text-base font-semibold text-tinta-900">
+          Estamos acordando o cardápio… Na primeira visita do dia isso pode levar até 1 minuto. Não precisa recarregar!
+        </p>
+      )}
       {Array.from({ length: 6 }, (_, i) => (
         <div key={i} className="flex gap-4">
           <div className="skeleton size-24 shrink-0 rounded-xl" />
@@ -27,7 +33,8 @@ function MenuSkeleton() {
 const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
 export default function MenuPage() {
-  const { data, isPending, isError, error, refetch } = useMenu()
+  const { data, isPending, isError, error, refetch, failureCount } = useMenu()
+  const waking = useSlow(isPending, 4000) || (isPending && failureCount > 0)
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState<PublicItem | null>(null)
   const [activeId, setActiveId] = useState<number | null>(null)
@@ -74,11 +81,16 @@ export default function MenuPage() {
           />
         </div>
 
-        {isPending && <MenuSkeleton />}
-        {isError && (
+        {isPending && <MenuSkeleton waking={waking} />}
+        {isError && !data && (
           <div className="px-4 py-10">
             <ErrorState message={error.message} onRetry={() => void refetch()} />
           </div>
+        )}
+        {isError && data && (
+          <p role="status" className="mx-auto mt-4 max-w-3xl rounded-2xl bg-laranja-100 px-4 py-3 text-sm font-semibold text-tinta-900">
+            Não foi possível atualizar agora. Mostrando o cardápio da sua última visita; os preços podem ter mudado.
+          </p>
         )}
 
         {data && data.length === 0 && (
