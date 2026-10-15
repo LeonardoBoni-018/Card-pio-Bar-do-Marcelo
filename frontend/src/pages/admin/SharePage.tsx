@@ -52,7 +52,7 @@ export default function SharePage() {
 
         <section aria-label="Cartaz com QR code" className="cartaz rounded-2xl bg-white p-5 text-center ring-1 ring-brasa-100">
           <div className="awning -mx-5 -mt-5 mb-4 h-3 overflow-hidden rounded-t-2xl" aria-hidden="true" />
-          <LogoFull className="mx-auto h-28 w-auto" />
+          <LogoFull className="mx-auto h-auto w-44" />
           <p className="mt-2 text-xl font-extrabold text-brasa-700">Veja o nosso cardápio</p>
           {qr ? (
             <img src={qr} alt={`QR code que abre ${link}`} width={240} height={240} className="mx-auto mt-3 size-60" />

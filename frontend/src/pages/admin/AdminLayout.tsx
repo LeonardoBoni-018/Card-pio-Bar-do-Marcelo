@@ -35,7 +35,7 @@ export function AdminLayout() {
   return (
     <div className="min-h-dvh md:grid md:h-dvh md:grid-cols-[15rem_1fr] md:grid-rows-[auto_1fr] md:overflow-hidden">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-brasa-100 bg-white px-4 md:static md:col-start-1 md:row-start-1 md:block md:h-auto md:border-r md:px-5 md:py-6">
-        <LogoName className="h-9 w-auto md:h-16" />
+        <LogoName className="h-9 w-auto md:h-14" />
         <p className="text-sm font-bold text-tinta-500 md:mt-2">Painel do proprietário</p>
       </header>
 

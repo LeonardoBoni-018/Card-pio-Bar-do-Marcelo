@@ -48,9 +48,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-dvh bg-brasa-600 px-4 py-6 sm:grid sm:place-items-center">
-      <main className="mx-auto w-full max-w-sm rounded-3xl bg-white p-6 shadow-xl sm:p-8">
-        <div className="awning -mx-6 -mt-6 mb-5 h-3 overflow-hidden rounded-t-3xl sm:-mx-8 sm:-mt-8" aria-hidden="true" />
-        <LogoFull className="mx-auto h-36 w-auto" />
+      <main className="mx-auto w-full max-w-sm overflow-hidden rounded-3xl bg-white p-6 shadow-xl sm:p-8">
+        <div className="awning -mx-6 -mt-6 mb-5 h-3 sm:-mx-8 sm:-mt-8" aria-hidden="true" />
+        <LogoFull className="mx-auto h-auto w-56" />
         <h1 className="mt-4 text-center text-2xl font-extrabold">Área do proprietário</h1>
         <p className="mt-1 text-center text-tinta-500">Entre para editar o cardápio.</p>
 
