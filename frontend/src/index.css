@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-/* Paleta tirada da fachada do bar: vermelho do letreiro, laranja do toldo, azul do céu (só foco/links). */
+/* Paleta tirada da fachada do bar: vermelho do letreiro, laranja do toldo, amarelo (destaques) e azul-céu só no anel de foco. */
 @theme {
   --color-brasa-50: #fef1f0;
   --color-brasa-100: #fde0de;
@@ -16,9 +16,13 @@
   --color-tinta-700: #4a2a2e;
   --color-tinta-500: #6e5357;
   --color-tinta-300: #c9b6b8;
+  --color-sol-100: #fff4c2;
+  --color-sol-300: #ffd84d;
+  --color-sol-500: #ffc21a;
+  --color-sol-700: #8a5a00;
   --color-ceu-600: #1f5f99;
   --color-ceu-700: #174a78;
-  --color-fundo: #fbf4f1;
+  --color-fundo: #fcf5ee;
   --font-display: 'Pacifico', cursive;
   --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
 }
@@ -59,7 +63,7 @@
 }
 
 @utility awning {
-  background: repeating-linear-gradient(90deg, var(--color-laranja-500) 0 26px, #fff 26px 52px);
+  background: repeating-linear-gradient(90deg, var(--color-brasa-600) 0 24px, var(--color-laranja-500) 24px 48px, var(--color-sol-500) 48px 72px, #fff 72px 96px);
 }
 
 @utility skeleton {
@@ -70,5 +74,23 @@
 @keyframes skeleton-pulse {
   50% {
     opacity: 0.45;
+  }
+}
+
+/* Cartaz do QR code: ao imprimir, só ele aparece */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .cartaz,
+  .cartaz * {
+    visibility: visible;
+  }
+  .cartaz {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    box-shadow: none;
+    --tw-ring-shadow: 0 0 #0000;
   }
 }

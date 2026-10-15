@@ -64,7 +64,7 @@ export function ImageUpload({ filename, currentUrl, onChange, onBusyChange }: Im
         {shown ? (
           <img src={shown} alt="Pré-visualização da foto do item" className="aspect-[4/3] w-full max-w-72 rounded-xl object-cover" />
         ) : (
-          <span className="flex aspect-[4/3] w-full max-w-72 items-center justify-center rounded-xl bg-laranja-100" aria-hidden="true">
+          <span className="flex aspect-[4/3] w-full max-w-72 items-center justify-center rounded-xl bg-sol-100" aria-hidden="true">
             <LogoMark className="h-4/5 w-auto" />
           </span>
         )}

@@ -32,6 +32,18 @@ export const getItem = (id: number) => request<AdminItem>(`/api/admin/items/${id
 export const createItem = (input: ItemInput) => request<AdminItem>('/api/admin/items', { method: 'POST', json: input, auth: true })
 export const updateItem = (id: number, input: ItemInput) =>
   request<AdminItem>(`/api/admin/items/${id}`, { method: 'PUT', json: input, auth: true })
+/** Converte um item salvo no corpo aceito pela API (para alterar só um campo ou duplicar). */
+export const toInput = (item: AdminItem, changes: Partial<ItemInput> = {}): ItemInput => ({
+  name: item.name,
+  description: item.description,
+  price: item.price,
+  categoryId: item.categoryId,
+  imageFilename: item.imageFilename,
+  available: item.available,
+  featured: item.featured,
+  ...changes,
+})
+export const setFeatured = (item: AdminItem, featured: boolean) => updateItem(item.id, toInput(item, { featured }))
 export const setAvailability = (id: number, available: boolean) =>
   request<AdminItem>(`/api/admin/items/${id}/availability`, { method: 'PATCH', json: { available }, auth: true })
 export const deleteItem = (id: number) => request<void>(`/api/admin/items/${id}`, { method: 'DELETE', auth: true })

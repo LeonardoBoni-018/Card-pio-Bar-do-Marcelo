@@ -60,8 +60,13 @@ O que o **cliente** vê (cardápio e fotos) é lido por duas funções da Vercel
 - Observação: o plano Hobby da Vercel é para uso não comercial; para um negócio, considere o plano Pro.
 - Para eliminar de vez a espera do painel: plano pago do Render ou um pinger externo (UptimeRobot) em `/actuator/health/liveness` no horário de funcionamento.
 
+## Painel do proprietário: recursos
+- **Resumo e filtros rápidos:** total de itens, quantos estão no cardápio agora e atalhos para ver só *Indisponíveis*, *Sem foto* e *Destaques*.
+- **Estrela de destaque** em cada item (um toque) e **Duplicar** (cadastro novo já preenchido, sem a foto) para criar variações rápido.
+- **Divulgar:** link do cardápio com botão de copiar, **QR code** e cartaz pronto para imprimir (cole nas mesas e no balcão).
+
 ## Decisões
-- **Identidade:** o **logo do letreiro** (vetorizado a partir da foto: `src/assets/logo-*.svg`, nítido em qualquer tamanho e sem fundo), vermelho do letreiro + laranja do toldo (listras no topo, como a fachada) + azul-céu só para foco e links. **Cores chapadas, sem degradês.** Textos com contraste AA (laranja só em fundos/decoração).
+- **Identidade:** o **logo do letreiro** (vetorizado a partir da foto: `src/assets/logo-*.svg`, nítido em qualquer tamanho e sem fundo), vermelho do letreiro (principal) + laranja do toldo + amarelo nos destaques (categoria ativa, selo, avisos); listras vermelho/laranja/amarelo no topo, como a fachada; azul-céu só no anel de foco do teclado. **Cores chapadas, sem degradês.** Textos com contraste AA (laranja só em fundos/decoração).
 - **Performance:** o painel é carregado sob demanda (`lazy`) — quem só olha o cardápio baixa ~97 kB (gzip), sem formulários/validação; imagens com `loading="lazy"` e dimensões fixas (sem salto de layout); TanStack Query com cache e revalidação.
 - **Segurança:** JWT em `localStorage` com expiração automática e logout em qualquer 401; React escapa todo conteúdo (sem `dangerouslySetInnerHTML`); CSP restritiva na Vercel; a validação final é sempre da API.
 - **Acessibilidade:** navegação por teclado, foco visível, `<dialog>` nativo, campos com rótulo e erro ligados por `aria-describedby`, `prefers-reduced-motion` respeitado, alvos de toque ≥ 44 px.

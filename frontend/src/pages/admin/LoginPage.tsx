@@ -49,17 +49,18 @@ export default function LoginPage() {
   return (
     <div className="min-h-dvh bg-brasa-600 px-4 py-6 sm:grid sm:place-items-center">
       <main className="mx-auto w-full max-w-sm rounded-3xl bg-white p-6 shadow-xl sm:p-8">
+        <div className="awning -mx-6 -mt-6 mb-5 h-3 overflow-hidden rounded-t-3xl sm:-mx-8 sm:-mt-8" aria-hidden="true" />
         <LogoFull className="mx-auto h-36 w-auto" />
         <h1 className="mt-4 text-center text-2xl font-extrabold">Área do proprietário</h1>
         <p className="mt-1 text-center text-tinta-500">Entre para editar o cardápio.</p>
 
         {expired && !mutation.isError && (
-          <p role="status" className="mt-4 rounded-lg bg-laranja-100 px-3 py-2 text-sm font-semibold text-tinta-900">
+          <p role="status" className="mt-4 rounded-lg bg-sol-100 ring-1 ring-sol-500 px-3 py-2 text-sm font-semibold text-tinta-900">
             Sua sessão expirou. Entre novamente.
           </p>
         )}
  {slow && mutation.isPending && (
-          <p role="status" className="mt-4 rounded-lg bg-laranja-100 px-3 py-2 text-sm font-semibold text-tinta-900">
+          <p role="status" className="mt-4 rounded-lg bg-sol-100 ring-1 ring-sol-500 px-3 py-2 text-sm font-semibold text-tinta-900">
             Conectando ao servidor… Na primeira entrada do dia pode levar até 1 minuto. Aguarde, não feche a página.
           </p>
         )}
@@ -102,7 +103,7 @@ export default function LoginPage() {
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                 aria-pressed={showPassword}
-                className="absolute right-1 top-1/2 min-h-11 -translate-y-1/2 rounded-lg px-3 text-sm font-bold text-ceu-700"
+                className="absolute right-1 top-1/2 min-h-11 -translate-y-1/2 rounded-lg px-3 text-sm font-bold text-brasa-700"
               >
                 {showPassword ? 'Ocultar' : 'Mostrar'}
               </button>
@@ -113,7 +114,7 @@ export default function LoginPage() {
           </Button>
         </form>
         <p className="mt-6 text-center text-sm">
-          <Link to="/" className="font-semibold text-ceu-700 underline underline-offset-4">
+          <Link to="/" className="font-semibold text-brasa-700 underline underline-offset-4">
             Voltar ao cardápio
           </Link>
         </p>

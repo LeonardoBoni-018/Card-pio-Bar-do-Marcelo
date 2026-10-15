@@ -13,7 +13,7 @@ function MenuSkeleton({ waking }: { waking: boolean }) {
   return (
     <div role="status" aria-label="Carregando cardápio" className="mx-auto max-w-3xl space-y-4 px-4 py-8">
       {waking && (
-        <p className="rounded-2xl bg-laranja-100 px-4 py-3 text-base font-semibold text-tinta-900">
+        <p className="rounded-2xl bg-sol-100 ring-1 ring-sol-500 px-4 py-3 text-base font-semibold text-tinta-900">
           Estamos acordando o cardápio… Na primeira visita do dia isso pode levar até 1 minuto. Não precisa recarregar!
         </p>
       )}
@@ -88,7 +88,7 @@ export default function MenuPage() {
           </div>
         )}
         {isError && data && (
-          <p role="status" className="mx-auto mt-4 max-w-3xl rounded-2xl bg-laranja-100 px-4 py-3 text-sm font-semibold text-tinta-900">
+          <p role="status" className="mx-auto mt-4 max-w-3xl rounded-2xl bg-sol-100 ring-1 ring-sol-500 px-4 py-3 text-sm font-semibold text-tinta-900">
             Não foi possível atualizar agora. Mostrando o cardápio da sua última visita; os preços podem ter mudado.
           </p>
         )}
@@ -126,7 +126,7 @@ export default function MenuPage() {
           </>
         )}
       </main>
-      <footer className="bg-tinta-900 px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-8 text-center text-sm text-tinta-300">
+      <footer className="bg-brasa-800 px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-8 text-center text-sm font-semibold text-sol-100">
         <p>Bar &amp; Mercearia Planalto · Preços sujeitos a alteração</p>
       </footer>
       <ItemDialog item={selected} onClose={() => setSelected(null)} />

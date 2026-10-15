@@ -257,4 +257,16 @@ describe('ItemFormPage — editar item', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Item não encontrado.')
   })
+
+  it('duplicar: abre o cadastro com os dados do item (nome com "(cópia)", sem a foto)', async () => {
+    setup()
+    server.use(http.get(`${API}/api/admin/items/7`, () => HttpResponse.json(adminItem({ id: 7, name: 'Chopp', price: 8.5, imageFilename: 'x.jpg', imageUrl: '/api/images/x.jpg', featured: true }))))
+    await renderForm('/admin/items/new?copiar=7')
+
+    expect(screen.getByRole('heading', { name: 'Duplicar item' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Nome')).toHaveValue('Chopp (cópia)')
+    expect(screen.getByLabelText('Preço (R$)')).toHaveValue('8,50')
+    expect(screen.getByRole('switch', { name: 'Destacar item' })).toBeChecked()
+    expect(screen.queryByAltText('Pré-visualização da foto do item')).toBeNull()
+  })
 })

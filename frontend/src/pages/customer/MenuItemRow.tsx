@@ -10,7 +10,7 @@ export function ItemPhoto({ item, className, thumb = false }: { item: PublicItem
   return src ? (
     <img src={src} onError={() => setFastFailed(true)} alt="" width={192} height={192} loading="lazy" decoding="async" className={`object-cover ${className}`} />
   ) : (
-    <div className={`flex items-center justify-center bg-laranja-100 ${className}`} aria-hidden="true">
+    <div className={`flex items-center justify-center bg-sol-100 ${className}`} aria-hidden="true">
       <LogoMark className="h-4/5 w-4/5 object-contain" />
     </div>
   )
@@ -32,7 +32,7 @@ export function MenuItemRow({ item, onOpen }: { item: PublicItem; onOpen: (item:
         <ItemPhoto item={item} thumb className="size-24 rounded-xl" />
         <span className="grid min-w-0 grid-cols-1 content-start gap-y-1 sm:grid-cols-[auto_1fr_auto] sm:gap-x-3">
           <span className="order-1 text-lg font-extrabold leading-tight">
-            {item.featured && <span className="mb-1 mr-2 inline-block rounded bg-brasa-600 px-2 py-0.5 align-middle text-xs font-extrabold text-white">Destaque</span>}
+            {item.featured && <span className="mb-1 mr-2 inline-block rounded bg-sol-500 px-2 py-0.5 align-middle text-xs font-extrabold text-tinta-900">Destaque</span>}
             {item.name}
           </span>
           <span aria-hidden="true" className="order-2 mb-1.5 hidden self-end border-b-2 border-dotted border-laranja-300 sm:block" />

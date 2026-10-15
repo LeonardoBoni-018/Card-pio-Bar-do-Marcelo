@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { z } from 'zod'
 import { ApiError } from '../../api/client'
 import { createItem, updateItem } from '../../api/endpoints'
@@ -43,7 +43,8 @@ const toValues = (item?: AdminItem): Values => ({
   imageFilename: item?.imageFilename ?? null,
 })
 
-function ItemForm({ item, categories }: { item?: AdminItem; categories: Category[] }) {
+/** `item` = edição; `template` = cópia de outro item (cadastro novo com os campos preenchidos, sem a foto). */
+function ItemForm({ item, template, categories }: { item?: AdminItem; template?: AdminItem; categories: Category[] }) {
   const navigate = useNavigate()
   const toast = useToast()
   const queryClient = useQueryClient()
@@ -55,7 +56,7 @@ function ItemForm({ item, categories }: { item?: AdminItem; categories: Category
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: toValues(item) })
+  } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: item ? toValues(item) : template ? { ...toValues(template), name: `${template.name} (cópia)`, imageFilename: null } : toValues() })
 
   const save = useMutation({
     mutationFn: (values: Values) => {
@@ -166,7 +167,7 @@ function ItemForm({ item, categories }: { item?: AdminItem; categories: Category
 
         {/* no celular a barra de ações fica fixa embaixo: salvar está sempre ao alcance do polegar */}
         <div className="fixed inset-x-0 bottom-0 z-30 flex gap-3 border-t border-brasa-100 bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 md:static md:justify-end md:border-t md:px-0 md:pb-0 md:pt-5">
-          <Link to="/admin/items" className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl text-base font-bold text-ceu-700 ring-1 ring-tinta-300 md:min-h-11 md:flex-none md:px-4 md:text-sm md:ring-0 md:hover:bg-brasa-50">
+          <Link to="/admin/items" className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl text-base font-bold text-brasa-700 ring-1 ring-tinta-300 md:min-h-11 md:flex-none md:px-4 md:text-sm md:ring-0 md:hover:bg-brasa-50">
             Cancelar
           </Link>
           <Button type="submit" className="flex-[2] md:flex-none" disabled={save.isPending || uploading}>
@@ -181,28 +182,31 @@ function ItemForm({ item, categories }: { item?: AdminItem; categories: Category
 export default function ItemFormPage() {
   const { id } = useParams()
   const itemId = id ? Number(id) : undefined
-  const query = useAdminItem(itemId)
+  const copyId = Number(useSearchParams()[0].get('copiar')) || undefined
+  const query = useAdminItem(itemId ?? copyId)
   const categories = useCategories()
 
   return (
     <div className="mx-auto max-w-4xl">
-      <Link to="/admin/items" className="inline-flex min-h-11 items-center text-base font-bold text-ceu-700 md:text-sm">
+      <Link to="/admin/items" className="inline-flex min-h-11 items-center text-base font-bold text-brasa-700 md:text-sm">
         ← Itens do cardápio
       </Link>
-      <h1 className="text-3xl font-extrabold">{itemId ? 'Editar item' : 'Novo item'}</h1>
+      <h1 className="text-3xl font-extrabold">{itemId ? 'Editar item' : copyId ? 'Duplicar item' : 'Novo item'}</h1>
       {/* o formulário só aparece com tudo pronto: o <select> de categoria precisa das opções para mostrar o valor salvo */}
-      {(categories.isPending || (itemId !== undefined && query.isPending)) && !categories.isError && !query.isError && <Spinner label="Carregando…" />}
+      {(categories.isPending || (itemId !== undefined && query.isPending) || (copyId !== undefined && query.isPending)) && !categories.isError && !query.isError && <Spinner label="Carregando…" />}
       {categories.isError && (
         <div className="mt-6">
           <ErrorState message={categories.error.message} onRetry={() => void categories.refetch()} />
         </div>
       )}
-      {itemId !== undefined && query.isError && (
+      {(itemId ?? copyId) !== undefined && query.isError && (
         <div className="mt-6">
           <ErrorState message={query.error.message} onRetry={() => void query.refetch()} />
         </div>
       )}
-      {categories.data && (itemId === undefined || query.data) && <ItemForm key={itemId ?? 'new'} item={query.data} categories={categories.data} />}
+      {categories.data && ((itemId === undefined && copyId === undefined) || query.data) && (
+        <ItemForm key={itemId ?? `copia-${copyId ?? 'novo'}`} item={itemId ? query.data : undefined} template={copyId ? query.data : undefined} categories={categories.data} />
+      )}
     </div>
   )
 }

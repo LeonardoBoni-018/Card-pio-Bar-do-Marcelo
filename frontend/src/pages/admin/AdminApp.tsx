@@ -4,6 +4,7 @@ import { AdminLayout } from './AdminLayout'
 import CategoriesPage from './CategoriesPage'
 import ItemFormPage from './ItemFormPage'
 import ItemsPage from './ItemsPage'
+import SharePage from './SharePage'
 import LoginPage from './LoginPage'
 import { RequireAuth } from './RequireAuth'
 
@@ -20,6 +21,7 @@ export default function AdminApp() {
             <Route path="items/new" element={<ItemFormPage />} />
             <Route path="items/:id" element={<ItemFormPage />} />
             <Route path="categories" element={<CategoriesPage />} />
+            <Route path="share" element={<SharePage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/admin" replace />} />

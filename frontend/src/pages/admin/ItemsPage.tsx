@@ -2,8 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { imageSrc } from '../../api/client'
-import { deleteItem, setAvailability } from '../../api/endpoints'
-import { keys, useAdminItems, useCategories } from '../../api/queries'
+import { deleteItem, setAvailability, setFeatured } from '../../api/endpoints'
+import { keys, useAdminItems, useAllItems, useCategories } from '../../api/queries'
 import type { AdminItem, Page } from '../../api/types'
 import { ErrorState } from '../../components/ErrorState'
 import { LogoMark } from '../../components/Logo'
@@ -15,18 +15,33 @@ import { Switch } from '../../components/ui/Switch'
 import { useToast } from '../../components/ui/Toast'
 import { formatBRL } from '../../lib/format'
 
+type Filtro = 'indisponiveis' | 'sem-foto' | 'destaques'
+const FILTROS: Array<{ id: Filtro; label: string; test: (item: AdminItem) => boolean }> = [
+  { id: 'indisponiveis', label: 'Indisponíveis', test: (i) => !i.available },
+  { id: 'sem-foto', label: 'Sem foto', test: (i) => !i.imageUrl },
+  { id: 'destaques', label: 'Destaques', test: (i) => i.featured },
+]
+
 export default function ItemsPage() {
   const [params, setParams] = useSearchParams()
   const q = params.get('q') ?? ''
   const categoryId = Number(params.get('categoryId')) || undefined
   const page = Number(params.get('page')) || 0
+  const filtro = FILTROS.find((f) => f.id === params.get('filtro'))
 
   const [search, setSearch] = useState(q)
   const [toDelete, setToDelete] = useState<AdminItem | null>(null)
   const toast = useToast()
   const queryClient = useQueryClient()
   const categories = useCategories()
-  const items = useAdminItems({ q, categoryId, page })
+  const paged = useAdminItems({ q, categoryId, page })
+  const all = useAllItems()
+
+  // com um filtro rápido ligado, a lista vem do cardápio inteiro (já carregado para o resumo), filtrada aqui mesmo
+  const filtered = filtro && all.data ? all.data.filter((i) => filtro.test(i) && (!categoryId || i.categoryId === categoryId) && (!q || i.name.toLowerCase().includes(q.toLowerCase()))) : null
+  const items = filtro
+    ? { ...all, data: filtered ? { content: filtered, page: 0, size: filtered.length, totalElements: filtered.length, totalPages: 1 } : undefined }
+    : paged
 
   const update = (changes: Record<string, string | undefined>) => {
     const next = new URLSearchParams(params)
@@ -63,6 +78,16 @@ export default function ItemsPage() {
     },
   })
 
+  const featured = useMutation({
+    mutationFn: ({ item, value }: { item: AdminItem; value: boolean }) => setFeatured(item, value),
+    onSuccess: (item) => toast.success(item.featured ? `“${item.name}” ganhou destaque.` : `“${item.name}” saiu dos destaques.`),
+    onError: (error) => toast.error(error.message),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: keys.items })
+      void queryClient.invalidateQueries({ queryKey: keys.menu })
+    },
+  })
+
   const remove = useMutation({
     mutationFn: (id: number) => deleteItem(id),
     onSuccess: () => {
@@ -77,7 +102,7 @@ export default function ItemsPage() {
     },
   })
 
-  const hasFilters = Boolean(q || categoryId)
+  const hasFilters = Boolean(q || categoryId || filtro)
   const noCategories = categories.data?.length === 0
 
   return (
@@ -87,6 +112,7 @@ export default function ItemsPage() {
         {/* celular: botão flutuante ao alcance do polegar; computador: botão comum ao lado do título */}
         <LinkButton
           to="/admin/items/new"
+          variant="accent"
           className="fixed bottom-20 right-4 z-20 min-h-14 rounded-full px-6 shadow-lg md:static md:min-h-11 md:rounded-lg md:shadow-none"
         >
           + Novo item
@@ -94,12 +120,37 @@ export default function ItemsPage() {
       </div>
 
       {noCategories && (
-        <p role="status" className="mt-4 rounded-lg bg-laranja-100 px-4 py-3 font-semibold">
+        <p role="status" className="mt-4 rounded-lg bg-sol-100 ring-1 ring-sol-500 px-4 py-3 font-semibold">
           Antes de cadastrar itens, crie ao menos uma categoria (ex.: Cervejas).{' '}
-          <Link to="/admin/categories" className="text-ceu-700 underline underline-offset-4">
+          <Link to="/admin/categories" className="text-brasa-700 underline underline-offset-4">
             Criar categoria
           </Link>
         </p>
+      )}
+
+      {all.data && all.data.length > 0 && (
+        <section aria-label="Resumo do cardápio" className="mt-5">
+          <p className="text-sm font-bold text-tinta-700">
+            {all.data.length} {all.data.length === 1 ? 'item' : 'itens'} · {all.data.filter((i) => i.available).length} no cardápio agora
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {FILTROS.map((f) => {
+              const count = all.data.filter(f.test).length
+              const active = filtro?.id === f.id
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => update({ filtro: active ? undefined : f.id, page: undefined })}
+                  className={`min-h-11 rounded-full px-4 text-sm font-extrabold ${active ? 'bg-sol-300 text-tinta-900 ring-2 ring-brasa-600' : 'bg-white text-tinta-700 ring-1 ring-laranja-300 hover:bg-sol-100'}`}
+                >
+                  {f.label}: {count}
+                </button>
+              )
+            })}
+          </div>
+        </section>
       )}
 
       <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_14rem]">
@@ -158,7 +209,7 @@ export default function ItemsPage() {
                     {src ? (
                       <img src={src} alt="" width={64} height={64} loading="lazy" className="size-16 shrink-0 rounded-xl object-cover" />
                     ) : (
-                      <span className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-laranja-100" aria-hidden="true">
+                      <span className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-sol-100 ring-1 ring-sol-500" aria-hidden="true">
                         <LogoMark className="size-12 object-contain" />
                       </span>
                     )}
@@ -170,7 +221,7 @@ export default function ItemsPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="mt-3 flex items-center gap-2 border-t border-brasa-100 pt-3 md:mt-0 md:border-0 md:pt-0">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-3 border-t border-brasa-100 pt-3 md:mt-0 md:flex-nowrap md:border-0 md:pt-0">
                     <Switch
                       checked={item.available}
                       onChange={(available) => availability.mutate({ id: item.id, available })}
@@ -179,7 +230,20 @@ export default function ItemsPage() {
                     <span className="text-sm font-semibold text-tinta-700 md:w-24" aria-hidden="true">
                       {item.available ? 'No cardápio' : 'Indisponível'}
                     </span>
-                    <span className="ml-auto flex gap-2">
+                    <span className="flex w-full flex-wrap gap-2 md:ml-auto md:w-auto md:flex-nowrap">
+                      <button
+                        type="button"
+                        aria-pressed={item.featured}
+                        aria-label={`Destacar ${item.name}`}
+                        title={item.featured ? 'Tirar dos destaques' : 'Destacar no cardápio'}
+                        onClick={() => featured.mutate({ item, value: !item.featured })}
+                        className={`inline-flex size-11 items-center justify-center rounded-lg text-xl ${item.featured ? 'bg-sol-300 text-tinta-900' : 'text-tinta-500 ring-1 ring-tinta-300 hover:bg-sol-100'}`}
+                      >
+                        <span aria-hidden="true">{item.featured ? '★' : '☆'}</span>
+                      </button>
+                      <LinkButton to={`/admin/items/new?copiar=${item.id}`} variant="secondary" aria-label={`Duplicar ${item.name}`}>
+                        Duplicar
+                      </LinkButton>
                       <LinkButton to={`/admin/items/${item.id}`} variant="secondary" aria-label={`Editar ${item.name}`}>
                         Editar
                       </LinkButton>

@@ -13,7 +13,7 @@ const Icon = ({ children }: { children: ReactNode }) => (
 
 const itemClass = (active: boolean) =>
   `flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-xs font-bold md:min-h-11 md:flex-row md:justify-start md:gap-3 md:rounded-lg md:px-4 md:text-sm ${
-    active ? 'bg-laranja-100 text-brasa-800' : 'text-tinta-700 active:bg-brasa-50 md:hover:bg-brasa-50'
+    active ? 'bg-sol-300 text-tinta-900' : 'text-tinta-700 active:bg-brasa-50 md:hover:bg-brasa-50'
   }`
 
 /**
@@ -41,7 +41,7 @@ export function AdminLayout() {
 
       <nav
         aria-label="Painel"
-        className={`fixed inset-x-0 bottom-0 z-30 grid-cols-4 border-t border-brasa-100 bg-white pb-[env(safe-area-inset-bottom)] md:static md:col-start-1 md:row-start-2 md:flex md:flex-col md:gap-1 md:border-r md:border-t-0 md:p-3 ${isForm ? 'hidden md:flex' : 'grid'}`}
+        className={`fixed inset-x-0 bottom-0 z-30 grid-cols-5 border-t border-brasa-100 bg-white pb-[env(safe-area-inset-bottom)] md:static md:col-start-1 md:row-start-2 md:flex md:flex-col md:gap-1 md:border-r md:border-t-0 md:p-3 ${isForm ? 'hidden md:flex' : 'grid'}`}
       >
         <NavLink to="/admin/items" className={({ isActive }) => itemClass(isActive)}>
           <Icon>
@@ -55,6 +55,12 @@ export function AdminLayout() {
             <path d="M7.5 7.5h.01" />
           </Icon>
           Categorias
+        </NavLink>
+        <NavLink to="/admin/share" className={({ isActive }) => itemClass(isActive)}>
+          <Icon>
+            <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM20 14v.01M14 20h.01M20 20v.01M17 17v3h3" />
+          </Icon>
+          Divulgar
         </NavLink>
         <a href="/" target="_blank" rel="noreferrer" className={itemClass(false)}>
           <Icon>

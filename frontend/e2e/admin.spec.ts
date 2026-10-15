@@ -102,6 +102,16 @@ test.describe('painel do proprietário', () => {
     await expect(page).toHaveURL(/\/admin\/login/)
   })
 
+  test('divulgação: QR code, link e acessibilidade (cores novas)', async ({ page }) => {
+    await login(page)
+    await page.getByRole('link', { name: 'Divulgar' }).click()
+    await expect(page.getByRole('heading', { name: 'Divulgar o cardápio' })).toBeVisible()
+    await expect(page.getByRole('img', { name: /QR code que abre/ })).toBeVisible()
+    await expectNoA11yViolations(page)
+    await page.getByRole('link', { name: 'Itens' }).click()
+    await expectNoA11yViolations(page)
+  })
+
   test('admin da API recusa chamadas sem token', async ({ request }) => {
     expect((await request.get('/api/admin/items')).status()).toBe(401)
   })

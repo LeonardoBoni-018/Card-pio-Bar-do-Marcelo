@@ -32,7 +32,7 @@ export function ItemDialog({ item, onClose }: { item: PublicItem | null; onClose
               <h2 id="item-dialog-title" className="text-2xl font-extrabold leading-tight">
                 {item.name}
               </h2>
-              <p className="text-2xl font-extrabold tabular-nums text-brasa-700">{formatBRL(item.price)}</p>
+              <p className="rounded-lg bg-sol-100 px-2 text-2xl font-extrabold tabular-nums text-brasa-700 ring-1 ring-sol-500">{formatBRL(item.price)}</p>
             </div>
             {item.description && <p className="mt-3 text-lg leading-snug text-tinta-700">{item.description}</p>}
             <button

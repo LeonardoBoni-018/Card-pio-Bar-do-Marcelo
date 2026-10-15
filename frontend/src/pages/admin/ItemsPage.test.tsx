@@ -174,4 +174,68 @@ describe('ItemsPage (proprietário)', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('O servidor teve um problema')
     expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeInTheDocument()
   })
+
+  describe('resumo e filtros rápidos', () => {
+    const many = [
+      adminItem({ id: 1, name: 'Chopp', imageUrl: '/api/images/a.jpg' }),
+      adminItem({ id: 2, name: 'Batata Frita', available: false, featured: true }),
+      adminItem({ id: 3, name: 'Suco', imageUrl: '/api/images/b.jpg', available: false }),
+    ]
+
+    it('mostra totais e filtra por indisponíveis, sem foto e destaques (liga e desliga)', async () => {
+      serve(page(many))
+      const user = userEvent.setup()
+      renderApp(ui, { route: '/admin/items' })
+
+      expect(await screen.findByText(/3 itens · 1 no cardápio agora/)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Indisponíveis: 2' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Sem foto: 1' })).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'Indisponíveis: 2' }))
+      expect(await screen.findByRole('button', { name: 'Indisponíveis: 2' })).toHaveAttribute('aria-pressed', 'true')
+      expect(screen.queryByText('Chopp')).toBeNull()
+      expect(screen.getByText('Batata Frita')).toBeInTheDocument()
+      expect(screen.getByText('Suco')).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'Destaques: 1' }))
+      expect(screen.queryByText('Suco')).toBeNull()
+      expect(screen.getByText('Batata Frita')).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'Destaques: 1' }))
+      expect(await screen.findByText('Chopp')).toBeInTheDocument()
+    })
+
+    it('filtro sem resultado mostra a mensagem de vazio', async () => {
+      serve(page([adminItem({ imageUrl: '/api/images/a.jpg' })]))
+      const user = userEvent.setup()
+      renderApp(ui, { route: '/admin/items' })
+      await user.click(await screen.findByRole('button', { name: 'Sem foto: 0' }))
+      expect(await screen.findByText('Nenhum item encontrado.')).toBeInTheDocument()
+    })
+  })
+
+  it('estrela liga/desliga o destaque enviando o item completo', async () => {
+    serve()
+    let sent: unknown
+    server.use(
+      http.put(`${API}/api/admin/items/1`, async ({ request }) => {
+        sent = await request.json()
+        return HttpResponse.json(adminItem({ featured: true }))
+      }),
+    )
+    const user = userEvent.setup()
+    renderApp(ui, { route: '/admin/items' })
+
+    await user.click(await screen.findByRole('button', { name: 'Destacar Chopp' }))
+
+    await waitFor(() => expect(sent).toEqual({ name: 'Chopp', description: 'Copo 300 ml', price: 8.5, categoryId: 1, imageFilename: null, available: true, featured: true }))
+    expect(await screen.findByText('“Chopp” ganhou destaque.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Destacar Batata Frita' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('duplicar leva ao cadastro com o item de origem', async () => {
+    serve()
+    renderApp(ui, { route: '/admin/items' })
+    expect(await screen.findByRole('link', { name: 'Duplicar Chopp' })).toHaveAttribute('href', '/admin/items/new?copiar=1')
+  })
 })
