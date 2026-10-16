@@ -160,4 +160,33 @@ describe('MenuPage (cliente)', () => {
     expect(screen.queryByRole('heading', { name: 'Antigo' })).not.toBeInTheDocument()
     expect(JSON.parse(localStorage.getItem('bdm.menu.v1')!).data).toEqual(menu)
   })
+
+  it('busca sem resultado oferece "Limpar busca" e volta ao cardápio completo', async () => {
+    serve()
+    const user = userEvent.setup()
+    renderApp(<MenuPage />)
+    await user.type(await screen.findByRole('searchbox'), 'xyzxyz')
+    expect(await screen.findByText(/Nenhum item encontrado/)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Limpar busca' }))
+    expect(await screen.findByRole('heading', { name: 'Cervejas' })).toBeInTheDocument()
+    expect(screen.getByRole('searchbox')).toHaveValue('')
+  })
+
+  it('mostra "Voltar ao topo" só depois de rolar e rola para o início', async () => {
+    serve()
+    const scrollTo = vi.fn()
+    vi.stubGlobal('scrollTo', scrollTo)
+    const user = userEvent.setup()
+    renderApp(<MenuPage />)
+    await screen.findByRole('heading', { name: 'Cervejas' })
+    expect(screen.queryByRole('button', { name: 'Voltar ao topo' })).toBeNull()
+
+    Object.defineProperty(window, 'scrollY', { value: 1200, configurable: true })
+    window.dispatchEvent(new Event('scroll'))
+    await user.click(await screen.findByRole('button', { name: 'Voltar ao topo' }))
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 0 }))
+
+    Object.defineProperty(window, 'scrollY', { value: 0, configurable: true })
+    vi.unstubAllGlobals()
+  })
 })

@@ -166,11 +166,11 @@ function ItemForm({ item, template, categories }: { item?: AdminItem; template?:
         </div>
 
         {/* no celular a barra de ações fica fixa embaixo: salvar está sempre ao alcance do polegar */}
-        <div className="fixed inset-x-0 bottom-0 z-30 flex gap-3 border-t border-brasa-100 bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 md:static md:justify-end md:border-t md:px-0 md:pb-0 md:pt-5">
+        <div className="fixed inset-x-0 bottom-0 z-30 flex gap-3 border-t border-brasa-100 bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 md:sticky md:inset-x-auto md:bottom-0 md:z-10 md:justify-end md:border-t md:px-0 md:pb-3 md:pt-4">
           <Link to="/admin/items" className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl text-base font-bold text-brasa-700 ring-1 ring-tinta-300 md:min-h-11 md:flex-none md:px-4 md:text-sm md:ring-0 md:hover:bg-brasa-50">
             Cancelar
           </Link>
-          <Button type="submit" className="flex-[2] md:flex-none" disabled={save.isPending || uploading}>
+          <Button type="submit" className="flex-[2] md:flex-none" loading={save.isPending || uploading}>
             {save.isPending ? 'Salvando…' : uploading ? 'Enviando foto…' : 'Salvar item'}
           </Button>
         </div>

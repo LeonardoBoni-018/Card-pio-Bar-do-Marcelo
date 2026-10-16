@@ -48,7 +48,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-dvh bg-brasa-600 px-4 py-6 sm:grid sm:place-items-center">
-      <main className="mx-auto w-full max-w-sm overflow-hidden rounded-3xl bg-white p-6 shadow-xl sm:p-8">
+      <main className="mx-auto w-full max-w-sm animate-fade-up overflow-hidden rounded-3xl bg-white p-6 shadow-xl sm:p-8">
         <div className="awning -mx-6 -mt-6 mb-5 h-3 sm:-mx-8 sm:-mt-8" aria-hidden="true" />
         <LogoFull className="mx-auto h-auto w-56" />
         <h1 className="mt-4 text-center text-2xl font-extrabold">Área do proprietário</h1>
@@ -109,7 +109,7 @@ export default function LoginPage() {
               </button>
             </div>
           </Field>
-          <Button type="submit" className="w-full" disabled={mutation.isPending}>
+          <Button type="submit" className="w-full" loading={mutation.isPending}>
             {mutation.isPending ? 'Entrando…' : 'Entrar'}
           </Button>
         </form>

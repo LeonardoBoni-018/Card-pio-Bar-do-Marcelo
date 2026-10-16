@@ -30,6 +30,30 @@ function MenuSkeleton({ waking }: { waking: boolean }) {
   )
 }
 
+/** Botão flutuante para voltar ao topo, só depois de rolar bastante (cardápios longos no celular). */
+function BackToTop() {
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 700)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+  if (!visible) return null
+  return (
+    <button
+      type="button"
+      aria-label="Voltar ao topo"
+      onClick={() => window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })}
+      className="press animate-pop fixed bottom-4 right-4 z-30 flex size-12 items-center justify-center rounded-full bg-brasa-600 text-white shadow-lg active:bg-brasa-800"
+    >
+      <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M6 15l6-6 6 6" />
+      </svg>
+    </button>
+  )
+}
+
 const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
 export default function MenuPage() {
@@ -106,9 +130,12 @@ export default function MenuPage() {
             )}
             <div className="mx-auto max-w-3xl px-4 pb-16">
               {categories.length === 0 && (
-                <p role="status" className="py-16 text-center text-lg text-tinta-700">
-                  Nenhum item encontrado para “{query}”. Tente outra palavra.
-                </p>
+                <div role="status" className="animate-fade-in py-16 text-center text-lg text-tinta-700">
+                  <p>Nenhum item encontrado para “{query}”. Tente outra palavra.</p>
+                  <button type="button" onClick={() => setQuery('')} className="press mt-4 min-h-11 rounded-full px-5 text-base font-bold text-brasa-700 ring-1 ring-brasa-600">
+                    Limpar busca
+                  </button>
+                </div>
               )}
               {categories.map((category) => (
                 <section key={category.id} id={`categoria-${category.id}`} data-category-id={category.id} aria-labelledby={`titulo-${category.id}`} className="pt-8">
@@ -116,8 +143,8 @@ export default function MenuPage() {
                     {category.name}
                   </h2>
                   <ul className="grid gap-3 sm:gap-1">
-                    {category.items.map((item) => (
-                      <MenuItemRow key={item.id} item={item} onOpen={setSelected} />
+                    {category.items.map((item, index) => (
+                      <MenuItemRow key={item.id} item={item} onOpen={setSelected} index={index} />
                     ))}
                   </ul>
                 </section>
@@ -129,6 +156,7 @@ export default function MenuPage() {
       <footer className="bg-brasa-800 px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-8 text-center text-sm font-semibold text-sol-100">
         <p>Bar &amp; Mercearia Planalto · Preços sujeitos a alteração</p>
       </footer>
+      <BackToTop />
       <ItemDialog item={selected} onClose={() => setSelected(null)} />
     </div>
   )

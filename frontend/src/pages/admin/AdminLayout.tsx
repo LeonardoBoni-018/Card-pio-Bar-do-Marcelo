@@ -1,8 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
-import { NavLink, Outlet, useMatch, useNavigate } from 'react-router'
+import { NavLink, Outlet, useLocation, useMatch, useNavigate } from 'react-router'
 import { session } from '../../auth/session'
 import { LogoName } from '../../components/Logo'
+import { TopProgress } from '../../components/ui/TopProgress'
 import { useKeepAlive } from '../../lib/useKeepAlive'
 
 const Icon = ({ children }: { children: ReactNode }) => (
@@ -12,7 +13,7 @@ const Icon = ({ children }: { children: ReactNode }) => (
 )
 
 const itemClass = (active: boolean) =>
-  `flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-xs font-bold md:min-h-11 md:flex-row md:justify-start md:gap-3 md:rounded-lg md:px-4 md:text-sm ${
+  `press flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-xs font-bold md:min-h-11 md:flex-row md:justify-start md:gap-3 md:rounded-lg md:px-4 md:text-sm ${
     active ? 'bg-sol-300 text-tinta-900' : 'text-tinta-700 active:bg-brasa-50 md:hover:bg-brasa-50'
   }`
 
@@ -22,6 +23,7 @@ const itemClass = (active: boolean) =>
  */
 export function AdminLayout() {
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
   useKeepAlive()
   const isForm = Boolean(useMatch('/admin/items/:id')) // /new também casa; o formulário tem barra de salvar própria
@@ -77,8 +79,12 @@ export function AdminLayout() {
         </button>
       </nav>
 
+      <TopProgress />
       <main className="min-w-0 px-4 pb-28 pt-5 md:col-start-2 md:row-span-2 md:row-start-1 md:overflow-y-auto md:px-8 md:pb-10 md:pt-8">
-        <Outlet />
+        {/* a chave refaz a animação de entrada a cada troca de tela (só opacidade: transform quebraria elementos fixed dentro) */}
+        <div key={location.pathname} className="animate-fade-in">
+          <Outlet />
+        </div>
       </main>
     </div>
   )

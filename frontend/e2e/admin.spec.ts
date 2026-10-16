@@ -107,8 +107,10 @@ test.describe('painel do proprietário', () => {
     await page.getByRole('link', { name: 'Divulgar' }).click()
     await expect(page.getByRole('heading', { name: 'Divulgar o cardápio' })).toBeVisible()
     await expect(page.getByRole('img', { name: /QR code que abre/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Imprimir cartaz' })).toBeEnabled()
     await expectNoA11yViolations(page)
     await page.getByRole('link', { name: 'Itens' }).click()
+    await expect(page.getByRole('heading', { name: 'Itens do cardápio' })).toBeVisible()
     await expectNoA11yViolations(page)
   })
 

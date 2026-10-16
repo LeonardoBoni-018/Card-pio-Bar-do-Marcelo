@@ -65,6 +65,13 @@ O que o **cliente** vê (cardápio e fotos) é lido por duas funções da Vercel
 - **Estrela de destaque** em cada item (um toque) e **Duplicar** (cadastro novo já preenchido, sem a foto) para criar variações rápido.
 - **Divulgar:** link do cardápio com botão de copiar, **QR code** e cartaz pronto para imprimir (cole nas mesas e no balcão).
 
+## Experiência de uso (UX)
+- **Avisos (toasts)** com ícone, botão de fechar, entrada animada e no máximo 3 na tela; no celular ficam acima da barra de navegação.
+- **Carregando:** esqueletos (cardápio e lista do painel), fio animado no topo do painel quando algo demora (não pisca em respostas rápidas) e botões com rodinha (`loading`) durante salvar/entrar/excluir.
+- **Animações suaves:** itens entram em cascata, janelas abrem com transição (no celular a gaveta sobe de baixo), botões "afundam" ao toque, fotos aparecem com fade. Tudo respeita *reduzir movimento* do aparelho.
+- **Cardápio:** botão "Voltar ao topo" e "Limpar busca" quando nada é encontrado.
+- **Telas testadas** (E2E, `e2e/responsive.spec.ts`): 17 tamanhos, de celular 320×568 a monitor 2560×1440, incluindo celular deitado e tablets (retrato e paisagem) — sem rolagem lateral, botões de salvar sempre alcançáveis e sem violações graves de acessibilidade.
+
 ## Decisões
 - **Identidade:** o **logo do letreiro** (arte oficial enviada pelo proprietário, em WebP com fundo transparente: `src/assets/logo-full/name/mark.webp`; ícones em `public/`), vermelho do letreiro (principal) + laranja do toldo + amarelo nos destaques (categoria ativa, selo, avisos); listras vermelho/laranja/amarelo no topo, como a fachada; azul-céu só no anel de foco do teclado. **Cores chapadas, sem degradês.** Textos com contraste AA (laranja só em fundos/decoração).
 - **Performance:** o painel é carregado sob demanda (`lazy`) — quem só olha o cardápio baixa ~97 kB (gzip), sem formulários/validação; imagens com `loading="lazy"` e dimensões fixas (sem salto de layout); TanStack Query com cache e revalidação.

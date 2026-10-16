@@ -10,7 +10,6 @@ import { LogoMark } from '../../components/Logo'
 import { Button, LinkButton } from '../../components/ui/Button'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { inputClass } from '../../components/ui/Field'
-import { Spinner } from '../../components/ui/Spinner'
 import { Switch } from '../../components/ui/Switch'
 import { useToast } from '../../components/ui/Toast'
 import { formatBRL } from '../../lib/format'
@@ -21,6 +20,22 @@ const FILTROS: Array<{ id: Filtro; label: string; test: (item: AdminItem) => boo
   { id: 'sem-foto', label: 'Sem foto', test: (i) => !i.imageUrl },
   { id: 'destaques', label: 'Destaques', test: (i) => i.featured },
 ]
+
+function ItemsSkeleton() {
+  return (
+    <ul role="status" aria-label="Carregando itens…" className="grid gap-3">
+      {Array.from({ length: 5 }, (_, i) => (
+        <li key={i} className="flex items-center gap-3 rounded-2xl bg-white p-3 ring-1 ring-brasa-100">
+          <div className="skeleton size-16 shrink-0 rounded-xl" />
+          <div className="flex-1 space-y-2">
+            <div className="skeleton h-5 w-1/2 rounded" />
+            <div className="skeleton h-4 w-1/3 rounded" />
+          </div>
+        </li>
+      ))}
+    </ul>
+  )
+}
 
 export default function ItemsPage() {
   const [params, setParams] = useSearchParams()
@@ -188,7 +203,7 @@ export default function ItemsPage() {
       </div>
 
       <div className="mt-5">
-        {items.isPending && <Spinner label="Carregando itens…" />}
+        {items.isPending && <ItemsSkeleton />}
         {items.isError && <ErrorState message={items.error.message} onRetry={() => void items.refetch()} />}
 
         {items.data && items.data.content.length === 0 && (
@@ -201,10 +216,10 @@ export default function ItemsPage() {
 
         {items.data && items.data.content.length > 0 && (
           <ul className="grid gap-3">
-            {items.data.content.map((item) => {
+            {items.data.content.map((item, index) => {
               const src = imageSrc(item.imageUrl, 'thumb')
               return (
-                <li key={item.id} className="rounded-2xl bg-white p-3 ring-1 ring-brasa-100 md:flex md:items-center md:gap-4">
+                <li key={item.id} style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }} className="animate-fade-up rounded-2xl bg-white p-3 ring-1 ring-brasa-100 xl:flex xl:items-center xl:gap-4">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     {src ? (
                       <img src={src} alt="" width={64} height={64} loading="lazy" className="size-16 shrink-0 rounded-xl object-cover" />
@@ -221,23 +236,23 @@ export default function ItemsPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-3 border-t border-brasa-100 pt-3 md:mt-0 md:flex-nowrap md:border-0 md:pt-0">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-3 border-t border-brasa-100 pt-3 xl:mt-0 xl:flex-nowrap xl:border-0 xl:pt-0">
                     <Switch
                       checked={item.available}
                       onChange={(available) => availability.mutate({ id: item.id, available })}
                       label={`Disponível: ${item.name}`}
                     />
-                    <span className="text-sm font-semibold text-tinta-700 md:w-24" aria-hidden="true">
+                    <span className="text-sm font-semibold text-tinta-700 xl:w-24" aria-hidden="true">
                       {item.available ? 'No cardápio' : 'Indisponível'}
                     </span>
-                    <span className="flex w-full flex-wrap gap-2 md:ml-auto md:w-auto md:flex-nowrap">
+                    <span className="flex w-full flex-wrap gap-2 xl:ml-auto xl:w-auto xl:flex-nowrap">
                       <button
                         type="button"
                         aria-pressed={item.featured}
                         aria-label={`Destacar ${item.name}`}
                         title={item.featured ? 'Tirar dos destaques' : 'Destacar no cardápio'}
                         onClick={() => featured.mutate({ item, value: !item.featured })}
-                        className={`inline-flex size-11 items-center justify-center rounded-lg text-xl ${item.featured ? 'bg-sol-300 text-tinta-900' : 'text-tinta-500 ring-1 ring-tinta-300 hover:bg-sol-100'}`}
+                        className={`press inline-flex size-11 items-center justify-center rounded-lg text-xl ${item.featured ? 'bg-sol-300 text-tinta-900' : 'text-tinta-500 ring-1 ring-tinta-300 hover:bg-sol-100'}`}
                       >
                         <span aria-hidden="true">{item.featured ? '★' : '☆'}</span>
                       </button>

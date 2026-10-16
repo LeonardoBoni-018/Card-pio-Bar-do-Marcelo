@@ -5,6 +5,7 @@ import { uploadImage } from '../../api/endpoints'
 import { prepareImage } from '../../lib/image'
 import { LogoMark } from '../../components/Logo'
 import { Button } from '../../components/ui/Button'
+import { Dot } from '../../components/ui/Spinner'
 
 const MAX_BYTES = 5 * 1024 * 1024 // limite da API, depois de reduzida
 const MAX_ORIGINAL_BYTES = 40 * 1024 * 1024
@@ -62,7 +63,15 @@ export function ImageUpload({ filename, currentUrl, onChange, onBusyChange }: Im
         className={`flex flex-col items-center gap-3 rounded-xl border-2 border-dashed p-4 text-center ${dragging ? 'border-brasa-600 bg-brasa-50' : 'border-laranja-300 bg-white'}`}
       >
         {shown ? (
-          <img src={shown} alt="Pré-visualização da foto do item" className="aspect-[4/3] w-full max-w-72 rounded-xl object-cover" />
+          <div className="relative w-full max-w-72">
+            <img src={shown} alt="Pré-visualização da foto do item" className="aspect-[4/3] w-full animate-fade-in rounded-xl object-cover" />
+            {upload.isPending && (
+              <div role="status" className="absolute inset-0 flex items-center justify-center rounded-xl bg-white/70 text-brasa-700">
+                <Dot className="size-8" />
+                <span className="sr-only">Enviando foto…</span>
+              </div>
+            )}
+          </div>
         ) : (
           <span className="flex aspect-[4/3] w-full max-w-72 items-center justify-center rounded-xl bg-sol-100" aria-hidden="true">
             <LogoMark className="h-4/5 w-auto" />

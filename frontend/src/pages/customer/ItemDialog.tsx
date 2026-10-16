@@ -22,7 +22,7 @@ export function ItemDialog({ item, onClose }: { item: PublicItem | null; onClose
       onClick={(event) => {
         if (event.target === ref.current) onClose() // clique no fundo escurecido
       }}
-      className="m-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-y-auto rounded-t-3xl p-0 shadow-2xl backdrop:bg-tinta-900/60 sm:m-auto sm:w-[min(94vw,28rem)] sm:rounded-2xl"
+      className="gaveta m-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-y-auto rounded-t-3xl p-0 shadow-2xl backdrop:bg-tinta-900/60 sm:m-auto sm:w-[min(94vw,28rem)] sm:rounded-2xl"
     >
       {item && (
         <div>
@@ -38,7 +38,7 @@ export function ItemDialog({ item, onClose }: { item: PublicItem | null; onClose
             <button
               type="button"
               onClick={onClose}
-              className="mt-6 min-h-12 w-full rounded-xl bg-brasa-600 px-4 py-3 text-base font-bold text-white active:bg-brasa-700"
+              className="press mt-6 min-h-12 w-full rounded-xl bg-brasa-600 px-4 py-3 text-base font-bold text-white active:bg-brasa-700"
             >
               Fechar
             </button>
