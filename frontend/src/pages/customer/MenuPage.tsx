@@ -13,7 +13,7 @@ function MenuSkeleton({ waking }: { waking: boolean }) {
   return (
     <div role="status" aria-label="Carregando cardápio" className="mx-auto max-w-3xl space-y-4 px-4 py-8">
       {waking && (
-        <p className="rounded-2xl bg-sol-100 ring-1 ring-sol-500 px-4 py-3 text-base font-semibold text-tinta-900">
+        <p className="animate-fade-up rounded-2xl bg-sol-100 ring-1 ring-sol-500 px-4 py-3 text-base font-semibold text-tinta-900">
           Estamos acordando o cardápio… Na primeira visita do dia isso pode levar até 1 minuto. Não precisa recarregar!
         </p>
       )}
@@ -116,8 +116,8 @@ export default function MenuPage() {
                     {category.name}
                   </h2>
                   <ul className="grid gap-3 sm:gap-1">
-                    {category.items.map((item) => (
-                      <MenuItemRow key={item.id} item={item} onOpen={setSelected} />
+                    {category.items.map((item, index) => (
+                      <MenuItemRow key={item.id} item={item} onOpen={setSelected} index={index} />
                     ))}
                   </ul>
                 </section>

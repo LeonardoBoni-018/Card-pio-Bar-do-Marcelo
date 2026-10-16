@@ -170,7 +170,7 @@ function ItemForm({ item, template, categories }: { item?: AdminItem; template?:
           <Link to="/admin/items" className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl text-base font-bold text-brasa-700 ring-1 ring-tinta-300 md:min-h-11 md:flex-none md:px-4 md:text-sm md:ring-0 md:hover:bg-brasa-50">
             Cancelar
           </Link>
-          <Button type="submit" className="flex-[2] md:flex-none" disabled={save.isPending || uploading}>
+          <Button type="submit" className="flex-[2] md:flex-none" loading={save.isPending || uploading}>
             {save.isPending ? 'Salvando…' : uploading ? 'Enviando foto…' : 'Salvar item'}
           </Button>
         </div>

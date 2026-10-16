@@ -6,9 +6,24 @@ import { formatBRL } from '../../lib/format'
 
 export function ItemPhoto({ item, className, thumb = false }: { item: PublicItem; className: string; thumb?: boolean }) {
   const [fastFailed, setFastFailed] = useState(false)
+  const [loaded, setLoaded] = useState(false)
   const src = publicImageSrc(item.imageUrl, thumb ? 'thumb' : undefined, !fastFailed)
   return src ? (
-    <img src={src} onError={() => setFastFailed(true)} alt="" width={192} height={192} loading="lazy" decoding="async" className={`object-cover ${className}`} />
+    <img
+      // imagens já em cache terminam de carregar antes do onLoad ser registrado
+      ref={(img) => {
+        if (img?.complete && img.naturalWidth > 0) setLoaded(true)
+      }}
+      src={src}
+      onLoad={() => setLoaded(true)}
+      onError={() => setFastFailed(true)}
+      alt=""
+      width={192}
+      height={192}
+      loading="lazy"
+      decoding="async"
+      className={`bg-sol-100 object-cover transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
+    />
   ) : (
     <div className={`flex items-center justify-center bg-sol-100 ${className}`} aria-hidden="true">
       <LogoMark className="h-4/5 w-4/5 object-contain" />
@@ -20,14 +35,15 @@ export function ItemPhoto({ item, className, thumb = false }: { item: PublicItem
  * Linha do cardápio. No celular: foto à esquerda; nome, descrição e preço empilhados (preço sempre visível, sem quebrar).
  * Em telas maiores: nome ····· preço na primeira linha, como num cardápio impresso.
  */
-export function MenuItemRow({ item, onOpen }: { item: PublicItem; onOpen: (item: PublicItem) => void }) {
+export function MenuItemRow({ item, onOpen, index = 0 }: { item: PublicItem; onOpen: (item: PublicItem) => void; index?: number }) {
   return (
-    <li>
+    // entrada escalonada só nos primeiros itens, para não atrasar listas longas
+    <li className="animate-fade-up" style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}>
       <button
         type="button"
         onClick={() => onOpen(item)}
         aria-label={`${item.name}, ${formatBRL(item.price)}. Ver detalhes`}
-        className="grid w-full grid-cols-[6rem_1fr] items-start gap-4 rounded-2xl bg-white p-3 text-left ring-1 ring-brasa-100 active:bg-brasa-50 sm:bg-transparent sm:ring-0 sm:hover:bg-brasa-50"
+        className="grid w-full grid-cols-[6rem_1fr] items-start gap-4 rounded-2xl bg-white p-3 text-left ring-1 ring-brasa-100 transition duration-150 active:scale-[0.99] active:bg-brasa-50 sm:bg-transparent sm:ring-0 sm:hover:bg-brasa-50"
       >
         <ItemPhoto item={item} thumb className="size-24 rounded-xl" />
         <span className="grid min-w-0 grid-cols-1 content-start gap-y-1 sm:grid-cols-[auto_1fr_auto] sm:gap-x-3">

@@ -25,6 +25,29 @@
   --color-fundo: #fcf5ee;
   --font-display: 'Pacifico', cursive;
   --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
+
+  /* animações curtas e discretas (a regra de prefers-reduced-motion abaixo as neutraliza) */
+  --animate-fade-up: fade-up 0.35s ease-out both;
+  --animate-toast-in: toast-in 0.25s ease-out both;
+  --animate-toast-out: toast-out 0.2s ease-in both;
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+  }
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(1rem) scale(0.98);
+    }
+  }
+  @keyframes toast-out {
+    to {
+      opacity: 0;
+      transform: translateY(0.5rem) scale(0.98);
+    }
+  }
 }
 
 @layer base {
@@ -49,6 +72,13 @@
     outline-offset: 2px;
     border-radius: 4px;
   }
+  /* diálogos nativos: entram com um leve deslize e o fundo escurece suavemente */
+  dialog[open] {
+    animation: dialog-in 0.22s ease-out;
+  }
+  dialog[open]::backdrop {
+    animation: backdrop-in 0.22s ease-out;
+  }
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto !important;
@@ -69,6 +99,19 @@
 @utility skeleton {
   background: var(--color-brasa-100);
   animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
 }
 
 @keyframes skeleton-pulse {

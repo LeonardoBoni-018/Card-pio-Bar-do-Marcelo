@@ -63,7 +63,7 @@ function CategoryRow({ category, onDelete }: { category: Category; onDelete: (c:
             <input id={`ordem-${category.id}`} type="number" min={0} value={order} onChange={(e) => setOrder(e.target.value)} className={inputClass} />
           </Field>
         </div>
-        <Button type="submit" disabled={save.isPending}>
+        <Button type="submit" loading={save.isPending}>
           Salvar
         </Button>
         <Button variant="secondary" onClick={() => { setEditing(false); setName(category.name); setOrder(String(category.displayOrder)) }}>
@@ -123,7 +123,7 @@ export default function CategoriesPage() {
             <input id="nova-categoria" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder="Ex.: Porções" className={inputClass} />
           </Field>
         </div>
-        <Button type="submit" disabled={add.isPending || !name.trim()}>
+        <Button type="submit" loading={add.isPending} disabled={!name.trim()}>
           Adicionar
         </Button>
       </form>

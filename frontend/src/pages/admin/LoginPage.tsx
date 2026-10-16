@@ -109,7 +109,7 @@ export default function LoginPage() {
               </button>
             </div>
           </Field>
-          <Button type="submit" className="w-full" disabled={mutation.isPending}>
+          <Button type="submit" className="w-full" loading={mutation.isPending}>
             {mutation.isPending ? 'Entrando…' : 'Entrar'}
           </Button>
         </form>
