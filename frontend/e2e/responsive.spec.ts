@@ -38,10 +38,11 @@ async function semEstouro(page: Page) {
     return { rolagem: document.documentElement.scrollWidth - largura, estouros }
   })
   expect(dados.rolagem, `rolagem lateral; elementos: ${dados.estouros.join(' | ')}`).toBeLessThanOrEqual(0)
-  expect(dados.estouros, 'elementos fora da tela').toEqual([])
+  expect(dados.estouros, `elementos fora da tela: ${dados.estouros.join(' | ')}`).toEqual([])
 }
 
 async function foto(page: Page, nome: string) {
+  await esperarAnimacoes(page)
   if (OUT) await page.screenshot({ path: `${OUT}/${nome}.png`, fullPage: false })
 }
 

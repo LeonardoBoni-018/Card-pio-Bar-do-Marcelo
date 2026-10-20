@@ -3,6 +3,8 @@ import { useMenu } from '../../api/queries'
 import type { PublicItem } from '../../api/types'
 import { ErrorState } from '../../components/ErrorState'
 import { BrandLoader } from '../../components/ui/BrandLoader'
+import { Icon } from '../../components/ui/Icon'
+import { categoryIcon } from '../../lib/categoryIcon'
 import { filterMenu } from '../../lib/menu'
 import { useSlow } from '../../lib/useSlow'
 import { BrandHeader } from './BrandHeader'
@@ -49,9 +51,7 @@ function BackToTop() {
       onClick={() => window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })}
       className="press animate-pop fixed bottom-4 right-4 z-30 flex size-12 items-center justify-center rounded-full bg-brasa-600 text-white shadow-lg active:bg-brasa-800"
     >
-      <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M6 15l6-6 6 6" />
-      </svg>
+      <Icon name="up" className="size-6" />
     </button>
   )
 }
@@ -92,19 +92,32 @@ export default function MenuPage() {
     <div className="min-h-screen">
       <BrandHeader />
       <main>
-        <div className="mx-auto max-w-3xl px-4 pb-4 pt-6">
+        <div className="mx-auto max-w-3xl px-4 pb-4 pt-5">
           <label htmlFor="busca" className="sr-only">
             Buscar no cardápio
           </label>
-          <input
-            id="busca"
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar no cardápio… (ex.: cerveja, batata)"
-            autoComplete="off"
-            className="block min-h-12 w-full rounded-full border border-tinta-300 bg-white px-5 text-base placeholder:text-tinta-500"
-          />
+          <div className="relative">
+            <Icon name="search" className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-tinta-500" />
+            <input
+              id="busca"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar no cardápio… (ex.: cerveja, batata)"
+              autoComplete="off"
+              className="block min-h-12 w-full rounded-full border border-tinta-300 bg-white pl-12 pr-12 text-base shadow-sm placeholder:text-tinta-500 [&::-webkit-search-cancel-button]:hidden"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery('')}
+                aria-label="Apagar texto da busca"
+                className="press absolute right-1 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full text-tinta-500 hover:bg-brasa-50"
+              >
+                <Icon name="close" className="size-5" />
+              </button>
+            )}
+          </div>
         </div>
 
         {isPending && <MenuSkeleton waking={waking} />}
@@ -132,7 +145,10 @@ export default function MenuPage() {
             )}
             <div className="mx-auto max-w-3xl px-4 pb-16">
               {categories.length === 0 && (
-                <div role="status" className="animate-fade-in py-16 text-center text-lg text-tinta-700">
+                <div role="status" className="animate-fade-in py-14 text-center text-lg text-tinta-700">
+                  <span className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-sol-100 text-brasa-700 ring-1 ring-sol-500">
+                    <Icon name="search" className="size-7" />
+                  </span>
                   <p>Nenhum item encontrado para “{query}”. Tente outra palavra.</p>
                   <button type="button" onClick={() => setQuery('')} className="press mt-4 min-h-11 rounded-full px-5 text-base font-bold text-brasa-700 ring-1 ring-brasa-600">
                     Limpar busca
@@ -140,10 +156,18 @@ export default function MenuPage() {
                 </div>
               )}
               {categories.map((category) => (
-                <section key={category.id} id={`categoria-${category.id}`} data-category-id={category.id} aria-labelledby={`titulo-${category.id}`} className="pt-8">
-                  <h2 id={`titulo-${category.id}`} className="mb-3 border-l-8 border-laranja-500 pl-3 text-2xl font-extrabold">
-                    {category.name}
-                  </h2>
+                <section key={category.id} id={`categoria-${category.id}`} data-category-id={category.id} aria-labelledby={`titulo-${category.id}`} className="pt-7">
+                  <div className="mb-3 flex items-center gap-3">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brasa-600 text-white shadow-sm" aria-hidden="true">
+                      <Icon name={categoryIcon(category.name)} className="size-6" />
+                    </span>
+                    <h2 id={`titulo-${category.id}`} className="min-w-0 flex-1 text-2xl font-extrabold">
+                      {category.name}
+                    </h2>
+                    <span className="rounded-full bg-sol-100 px-2.5 py-0.5 text-sm font-bold text-tinta-700 ring-1 ring-sol-500/60">
+                      {category.items.length} {category.items.length === 1 ? 'item' : 'itens'}
+                    </span>
+                  </div>
                   <ul className="grid gap-3 sm:gap-1">
                     {category.items.map((item, index) => (
                       <MenuItemRow key={item.id} item={item} onOpen={setSelected} index={index} />
@@ -155,8 +179,17 @@ export default function MenuPage() {
           </>
         )}
       </main>
-      <footer className="bg-brasa-800 px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-8 text-center text-sm font-semibold text-sol-100">
-        <p>Bar &amp; Mercearia Planalto · Preços sujeitos a alteração</p>
+      <footer className="bg-brasa-800 px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-8 text-sm font-semibold text-sol-100">
+        <div className="mx-auto flex max-w-3xl flex-col items-center gap-2 text-center">
+          <p className="flex items-center gap-2 text-base font-extrabold text-white">
+            <Icon name="store" className="size-5 text-sol-300" />
+            Bar &amp; Mercearia Planalto
+          </p>
+          <p className="flex items-center gap-2">
+            <Icon name="info" className="size-4" />
+            Preços sujeitos a alteração
+          </p>
+        </div>
       </footer>
       <BackToTop />
       <ItemDialog item={selected} onClose={() => setSelected(null)} />

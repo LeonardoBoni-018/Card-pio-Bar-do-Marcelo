@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { MenuCategory } from '../../api/types'
+import { Icon } from '../../components/ui/Icon'
+import { categoryIcon } from '../../lib/categoryIcon'
 
 interface CategoryNavProps {
   categories: MenuCategory[]
@@ -19,7 +21,7 @@ export function CategoryNav({ categories, activeId, onSelect }: CategoryNavProps
 
   return (
     <nav aria-label="Categorias do cardápio" className="sticky top-0 z-20 border-b border-brasa-100 bg-white">
-      <div className="mx-auto flex max-w-3xl snap-x gap-2 overflow-x-auto px-4 py-2.5 [scrollbar-width:none]">
+      <div className="mx-auto flex max-w-3xl snap-x gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none]">
         {categories.map((category) => {
           const active = category.id === activeId
           return (
@@ -29,10 +31,11 @@ export function CategoryNav({ categories, activeId, onSelect }: CategoryNavProps
               type="button"
               aria-current={active ? 'true' : undefined}
               onClick={() => onSelect(category.id)}
-              className={`min-h-11 shrink-0 snap-start rounded-full px-5 text-base font-extrabold transition-colors ${
+              className={`press flex min-h-11 shrink-0 snap-start items-center gap-2 rounded-full pl-3.5 pr-4 text-base font-extrabold transition-colors ${
                 active ? 'bg-sol-300 text-tinta-900 ring-2 ring-brasa-600' : 'bg-white text-tinta-700 ring-1 ring-laranja-300 hover:bg-sol-100'
               }`}
             >
+              <Icon name={categoryIcon(category.name)} className="size-5" />
               {category.name}
             </button>
           )

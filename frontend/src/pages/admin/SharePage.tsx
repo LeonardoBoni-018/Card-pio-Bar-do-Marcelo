@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { LogoFull } from '../../components/Logo'
 import { Button } from '../../components/ui/Button'
+import { Icon } from '../../components/ui/Icon'
+import { CardTitle, cardClass, PageHeader } from '../../components/ui/Layout'
 import { useToast } from '../../components/ui/Toast'
 
 /** Divulgação: link do cardápio, QR code para colar nas mesas e cartaz pronto para imprimir. */
@@ -31,27 +33,30 @@ export default function SharePage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <h1 className="text-3xl font-extrabold">Divulgar o cardápio</h1>
-      <p className="mt-1 text-tinta-500">Cole o QR code nas mesas e no balcão: o cliente aponta a câmera e vê o cardápio atualizado.</p>
+    <div className="mx-auto max-w-4xl space-y-5">
+      <PageHeader icon="qr" title="Divulgar o cardápio" subtitle="Cole o QR code nas mesas e no balcão: o cliente aponta a câmera e vê o cardápio atualizado." />
 
-      <div className="mt-6 grid gap-6 md:grid-cols-[1fr_20rem]">
-        <section aria-label="Link do cardápio" className="rounded-2xl bg-white p-5 ring-1 ring-brasa-100">
-          <h2 className="text-lg font-extrabold">Link do cardápio</h2>
+      <div className="grid gap-5 lg:grid-cols-[1fr_20rem]">
+        <section aria-label="Link do cardápio" className={cardClass}>
+          <CardTitle icon="link">Link do cardápio</CardTitle>
           <p className="mt-2 break-all rounded-lg bg-sol-100 px-3 py-2 font-bold ring-1 ring-sol-500" data-testid="link-cardapio">
             {link}
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
-            <Button onClick={() => void copy()}>Copiar link</Button>
-            <a href={link} target="_blank" rel="noreferrer" className="inline-flex min-h-12 items-center justify-center rounded-xl px-5 text-base font-bold text-brasa-700 ring-1 ring-tinta-300 hover:bg-brasa-50 md:min-h-11 md:rounded-lg md:px-4 md:text-sm">
+            <Button onClick={() => void copy()} className="gap-2">
+              <Icon name="copy" />
+              Copiar link
+            </Button>
+            <a href={link} target="_blank" rel="noreferrer" className="inline-flex min-h-12 items-center justify-center rounded-xl px-5 text-base font-bold text-brasa-700 ring-1 ring-tinta-300 hover:bg-brasa-50 md:min-h-11 md:rounded-lg md:px-4 md:text-sm gap-2">
+              <Icon name="eye" />
               Abrir cardápio
             </a>
           </div>
           <p className="mt-4 text-sm text-tinta-500">Dica: use o mesmo link no Instagram, no WhatsApp e no Google Meu Negócio.</p>
         </section>
 
-        <section aria-label="Cartaz com QR code" className="cartaz rounded-2xl bg-white p-5 text-center ring-1 ring-brasa-100">
-          <div className="awning -mx-5 -mt-5 mb-4 h-3 overflow-hidden rounded-t-2xl" aria-hidden="true" />
+        <section aria-label="Cartaz com QR code" className={`cartaz ${cardClass} text-center`}>
+          <div className="awning -mx-4 -mt-4 mb-4 h-3 overflow-hidden rounded-t-2xl sm:-mx-5 sm:-mt-5" aria-hidden="true" />
           <LogoFull className="mx-auto h-auto w-44" />
           <p className="mt-2 text-xl font-extrabold text-brasa-700">Veja o nosso cardápio</p>
           {qr ? (
@@ -63,8 +68,9 @@ export default function SharePage() {
         </section>
       </div>
 
-      <div className="mt-5">
-        <Button variant="accent" onClick={() => window.print()} disabled={!qr}>
+      <div>
+        <Button variant="accent" onClick={() => window.print()} disabled={!qr} className="gap-2">
+          <Icon name="printer" />
           Imprimir cartaz
         </Button>
       </div>

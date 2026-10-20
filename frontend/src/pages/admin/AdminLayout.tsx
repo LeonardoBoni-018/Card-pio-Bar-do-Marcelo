@@ -3,14 +3,9 @@ import type { ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useMatch, useNavigate } from 'react-router'
 import { session } from '../../auth/session'
 import { LogoName } from '../../components/Logo'
+import { Icon } from '../../components/ui/Icon'
 import { TopProgress } from '../../components/ui/TopProgress'
 import { useKeepAlive } from '../../lib/useKeepAlive'
-
-const Icon = ({ children }: { children: ReactNode }) => (
-  <svg viewBox="0 0 24 24" className="size-6 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    {children}
-  </svg>
-)
 
 /**
  * Item de navegação. Celular: ícone numa "bolha" que sobe e fica amarela quando ativo, com o nome embaixo.
@@ -67,35 +62,26 @@ export function AdminLayout() {
       >
         <span aria-hidden="true" className="awning absolute inset-x-8 top-0 h-1 rounded-b-full md:hidden" />
         <NavLink to="/admin/items" className={({ isActive }) => itemClass(isActive)}>
-          {({ isActive }) => <NavItemContent active={isActive} label="Itens" icon={<Icon><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></Icon>} />}
+          {({ isActive }) => <NavItemContent active={isActive} label="Itens" icon={<Icon name="list" className="size-6" />} />}
         </NavLink>
         <NavLink to="/admin/categories" className={({ isActive }) => itemClass(isActive)}>
-          {({ isActive }) => <NavItemContent active={isActive} label="Categorias" icon={<Icon><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z" /><path d="M7.5 7.5h.01" /></Icon>} />}
+          {({ isActive }) => <NavItemContent active={isActive} label="Categorias" icon={<Icon name="tags" className="size-6" />} />}
         </NavLink>
         <NavLink to="/admin/share" className={({ isActive }) => itemClass(isActive)}>
-          {({ isActive }) => <NavItemContent active={isActive} label="Divulgar" icon={<Icon><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM20 14v.01M14 20h.01M20 20v.01M17 17v3h3" /></Icon>} />}
+          {({ isActive }) => <NavItemContent active={isActive} label="Divulgar" icon={<Icon name="qr" className="size-6" />} />}
         </NavLink>
         <a href="/" target="_blank" rel="noreferrer" className={itemClass(false)}>
           <NavItemContent
             active={false}
             label="Cardápio"
-            icon={
-              <Icon>
-                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
-                <circle cx="12" cy="12" r="3" />
-              </Icon>
-            }
+            icon={<Icon name="eye" className="size-6" />}
           />
         </a>
         <button type="button" onClick={logout} className={`${itemClass(false)} md:mt-4`}>
           <NavItemContent
             active={false}
             label="Sair"
-            icon={
-              <Icon>
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-              </Icon>
-            }
+            icon={<Icon name="logout" className="size-6" />}
           />
         </button>
       </nav>

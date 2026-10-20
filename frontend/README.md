@@ -74,6 +74,11 @@ O que o **cliente** vê (cardápio e fotos) é lido por duas funções da Vercel
 - **Cardápio:** botão "Voltar ao topo" e "Limpar busca" quando nada é encontrado.
 - **Telas testadas** (E2E, `e2e/responsive.spec.ts`): 17 tamanhos, de celular 320×568 a monitor 2560×1440, incluindo celular deitado e tablets (retrato e paisagem) — sem rolagem lateral, botões de salvar sempre alcançáveis e sem violações graves de acessibilidade.
 
+## Padrões de layout (mobile primeiro)
+- **Ícones** de traço uniformes (`components/ui/Icon.tsx`): categorias do cardápio ganham ícone pelo nome (cerveja → caneca, porções → talheres, bebidas → copo…), e o painel usa ícones em títulos, filtros e ações.
+- **Medidas padronizadas:** margem lateral 16 px, cartões `rounded-2xl` com sombra leve e padding 16/20 px, espaço de 20 px entre blocos, controles com 48 px de altura no celular, ícones de 20/24 px, cabeçalho de página com bolha amarela (`PageHeader`, `cardClass`).
+- **Painel:** resumo em 3 cartões (indisponíveis, sem foto, destaques) que também filtram; ações do item com ícones (só ícone no celular, ícone + nome em telas maiores); formulário em cartões (imagem, dados, como aparece no cardápio) com barra de salvar fixa.
+
 ## Decisões
 - **Identidade:** o **logo do letreiro** (arte oficial enviada pelo proprietário, em WebP com fundo transparente: `src/assets/logo-full/name/mark.webp`; ícones em `public/`), vermelho do letreiro (principal) + laranja do toldo + amarelo nos destaques (categoria ativa, selo, avisos); listras vermelho/laranja/amarelo no topo, como a fachada; azul-céu só no anel de foco do teclado. **Cores chapadas, sem degradês.** Textos com contraste AA (laranja só em fundos/decoração).
 - **Performance:** o painel é carregado sob demanda (`lazy`) — quem só olha o cardápio baixa ~97 kB (gzip), sem formulários/validação; imagens com `loading="lazy"` e dimensões fixas (sem salto de layout); TanStack Query com cache e revalidação.

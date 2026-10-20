@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { PublicItem } from '../../api/types'
 import { formatBRL } from '../../lib/format'
+import { IconFilled } from '../../components/ui/Icon'
 import { ItemPhoto } from './MenuItemRow'
 
 /** No celular abre como uma "gaveta" colada embaixo (fácil de fechar com o polegar); em telas maiores, centralizado. */
@@ -30,6 +31,12 @@ export function ItemDialog({ item, onClose }: { item: PublicItem | null; onClose
           <div className="p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-baseline justify-between gap-4">
               <h2 id="item-dialog-title" className="text-2xl font-extrabold leading-tight">
+                {item.featured && (
+                  <span className="mb-1 mr-2 inline-flex items-center gap-1 rounded-full bg-sol-500 py-0.5 pl-1.5 pr-2.5 align-middle text-xs font-extrabold text-tinta-900">
+                    <IconFilled name="star" className="size-3.5" />
+                    Destaque
+                  </span>
+                )}
                 {item.name}
               </h2>
               <p className="rounded-lg bg-sol-100 px-2 text-2xl font-extrabold tabular-nums text-brasa-700 ring-1 ring-sol-500">{formatBRL(item.price)}</p>

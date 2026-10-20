@@ -53,7 +53,7 @@ export function ImageUpload({ filename, currentUrl, onChange, onBusyChange }: Im
 
   return (
     <div>
-      <p id="foto-label" className="mb-1.5 text-sm font-bold text-tinta-700">
+      <p id="foto-label" className="sr-only">
         Foto
       </p>
       <div
