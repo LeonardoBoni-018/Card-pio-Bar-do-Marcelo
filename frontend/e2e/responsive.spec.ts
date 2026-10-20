@@ -84,6 +84,18 @@ for (const tela of TELAS) {
         await expect(page.getByRole('heading', { name: titulo })).toBeVisible()
         await semEstouro(page)
         await foto(page, `${tela.nome}-${link.toLowerCase()}`)
+        if (link === 'Categorias') {
+          // nenhum texto da lista de categorias pode ficar cortado ou sobreposto a outro
+          await esperarAnimacoes(page)
+          for (const linha of await page.locator('main ul > li').all()) {
+            const nome = (await linha.locator('p').first().boundingBox())!
+            const posicao = (await linha.getByText(/^Posição \d+/).boundingBox())!
+            const sobrepoe = nome.x < posicao.x + posicao.width && posicao.x < nome.x + nome.width && nome.y < posicao.y + posicao.height && posicao.y < nome.y + nome.height
+            expect(sobrepoe, 'nome sobreposto à posição').toBe(false)
+            const cortado = await linha.locator('p').first().evaluate((el) => el.scrollWidth > el.clientWidth + 1)
+            expect(cortado, 'nome cortado').toBe(false)
+          }
+        }
       }
       await page.goto('/admin/items/new')
       await expect(page.getByRole('heading', { name: 'Novo item' })).toBeVisible()

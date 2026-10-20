@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useMenu } from '../../api/queries'
 import type { PublicItem } from '../../api/types'
 import { ErrorState } from '../../components/ErrorState'
+import { BrandLoader } from '../../components/ui/BrandLoader'
 import { filterMenu } from '../../lib/menu'
 import { useSlow } from '../../lib/useSlow'
 import { BrandHeader } from './BrandHeader'
@@ -11,13 +12,14 @@ import { MenuItemRow } from './MenuItemRow'
 
 function MenuSkeleton({ waking }: { waking: boolean }) {
   return (
-    <div role="status" aria-label="Carregando cardápio" className="mx-auto max-w-3xl space-y-4 px-4 py-8">
+    <div role="status" aria-label="Carregando cardápio" className="mx-auto max-w-3xl space-y-4 px-4 py-4">
       {waking && (
         <p className="animate-fade-up rounded-2xl bg-sol-100 ring-1 ring-sol-500 px-4 py-3 text-base font-semibold text-tinta-900">
           Estamos acordando o cardápio… Na primeira visita do dia isso pode levar até 1 minuto. Não precisa recarregar!
         </p>
       )}
-      {Array.from({ length: 6 }, (_, i) => (
+      <BrandLoader size="lg" label="Preparando o cardápio…" silent />
+      {Array.from({ length: 4 }, (_, i) => (
         <div key={i} className="flex gap-4">
           <div className="skeleton size-24 shrink-0 rounded-xl" />
           <div className="flex-1 space-y-3 py-1">

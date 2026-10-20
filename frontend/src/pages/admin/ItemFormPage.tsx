@@ -193,7 +193,7 @@ export default function ItemFormPage() {
       </Link>
       <h1 className="text-3xl font-extrabold">{itemId ? 'Editar item' : copyId ? 'Duplicar item' : 'Novo item'}</h1>
       {/* o formulário só aparece com tudo pronto: o <select> de categoria precisa das opções para mostrar o valor salvo */}
-      {(categories.isPending || (itemId !== undefined && query.isPending) || (copyId !== undefined && query.isPending)) && !categories.isError && !query.isError && <Spinner label="Carregando…" />}
+      {(categories.isPending || (itemId !== undefined && query.isPending) || (copyId !== undefined && query.isPending)) && !categories.isError && !query.isError && <Spinner label="Carregando o item…" />}
       {categories.isError && (
         <div className="mt-6">
           <ErrorState message={categories.error.message} onRetry={() => void categories.refetch()} />

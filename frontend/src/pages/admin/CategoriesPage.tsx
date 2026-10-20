@@ -32,8 +32,9 @@ function CategoryRow({ category, onDelete }: { category: Category; onDelete: (c:
   if (!editing) {
     return (
       <li className="flex animate-fade-in flex-wrap items-center gap-x-3 gap-y-2 p-4">
-        <p className="min-w-0 flex-1 text-lg font-extrabold">{category.name}</p>
-        <p className="text-sm text-tinta-500">Posição {category.displayOrder}</p>
+        {/* no celular o nome ocupa a linha toda (quebra se for longo); posição e botões ficam na linha de baixo */}
+        <p className="min-w-0 basis-full break-words text-lg font-extrabold sm:basis-0 sm:flex-1">{category.name}</p>
+        <p className="mr-auto text-sm text-tinta-500 sm:mr-0">Posição {category.displayOrder}</p>
         <Button variant="secondary" onClick={() => setEditing(true)} aria-label={`Editar ${category.name}`}>
           Editar
         </Button>

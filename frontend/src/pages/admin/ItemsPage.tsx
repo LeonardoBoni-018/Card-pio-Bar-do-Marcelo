@@ -10,6 +10,7 @@ import { LogoMark } from '../../components/Logo'
 import { Button, LinkButton } from '../../components/ui/Button'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { inputClass } from '../../components/ui/Field'
+import { Spinner } from '../../components/ui/Spinner'
 import { Switch } from '../../components/ui/Switch'
 import { useToast } from '../../components/ui/Toast'
 import { formatBRL } from '../../lib/format'
@@ -20,22 +21,6 @@ const FILTROS: Array<{ id: Filtro; label: string; test: (item: AdminItem) => boo
   { id: 'sem-foto', label: 'Sem foto', test: (i) => !i.imageUrl },
   { id: 'destaques', label: 'Destaques', test: (i) => i.featured },
 ]
-
-function ItemsSkeleton() {
-  return (
-    <ul role="status" aria-label="Carregando itens…" className="grid gap-3">
-      {Array.from({ length: 5 }, (_, i) => (
-        <li key={i} className="flex items-center gap-3 rounded-2xl bg-white p-3 ring-1 ring-brasa-100">
-          <div className="skeleton size-16 shrink-0 rounded-xl" />
-          <div className="flex-1 space-y-2">
-            <div className="skeleton h-5 w-1/2 rounded" />
-            <div className="skeleton h-4 w-1/3 rounded" />
-          </div>
-        </li>
-      ))}
-    </ul>
-  )
-}
 
 export default function ItemsPage() {
   const [params, setParams] = useSearchParams()
@@ -128,7 +113,7 @@ export default function ItemsPage() {
         <LinkButton
           to="/admin/items/new"
           variant="accent"
-          className="fixed bottom-20 right-4 z-20 min-h-14 rounded-full px-6 shadow-lg md:static md:min-h-11 md:rounded-lg md:shadow-none"
+          className="fixed bottom-24 right-4 z-20 min-h-14 rounded-full px-6 shadow-lg md:static md:min-h-11 md:rounded-lg md:shadow-none"
         >
           + Novo item
         </LinkButton>
@@ -203,7 +188,7 @@ export default function ItemsPage() {
       </div>
 
       <div className="mt-5">
-        {items.isPending && <ItemsSkeleton />}
+        {items.isPending && <Spinner label="Carregando itens…" />}
         {items.isError && <ErrorState message={items.error.message} onRetry={() => void items.refetch()} />}
 
         {items.data && items.data.content.length === 0 && (

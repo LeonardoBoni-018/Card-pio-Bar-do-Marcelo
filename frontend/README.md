@@ -69,6 +69,8 @@ O que o **cliente** vê (cardápio e fotos) é lido por duas funções da Vercel
 - **Avisos (toasts)** com ícone, botão de fechar, entrada animada e no máximo 3 na tela; no celular ficam acima da barra de navegação.
 - **Carregando:** esqueletos (cardápio e lista do painel), fio animado no topo do painel quando algo demora (não pisca em respostas rápidas) e botões com rodinha (`loading`) durante salvar/entrar/excluir.
 - **Animações suaves:** itens entram em cascata, janelas abrem com transição (no celular a gaveta sobe de baixo), botões "afundam" ao toque, fotos aparecem com fade. Tudo respeita *reduzir movimento* do aparelho.
+- **Loader da marca:** enquanto o painel abre, as abas carregam ou o cardápio é preparado, aparece a caneca do bar dando zoom (cresce e encolhe, balançando) sobre ondas amarelas e laranjas (`BrandLoader`).
+- **Navegação do painel:** barra inferior arredondada com listras no topo e ícone ativo numa bolha amarela que sobe; no computador, menu lateral com item ativo em amarelo e marcador vermelho.
 - **Cardápio:** botão "Voltar ao topo" e "Limpar busca" quando nada é encontrado.
 - **Telas testadas** (E2E, `e2e/responsive.spec.ts`): 17 tamanhos, de celular 320×568 a monitor 2560×1440, incluindo celular deitado e tablets (retrato e paisagem) — sem rolagem lateral, botões de salvar sempre alcançáveis e sem violações graves de acessibilidade.
 

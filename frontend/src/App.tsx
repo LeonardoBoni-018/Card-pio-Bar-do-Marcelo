@@ -28,7 +28,7 @@ export function AppRoutes() {
       <Route
         path="/admin/*"
         element={
-          <Suspense fallback={<Spinner label="Abrindo painel…" />}>
+          <Suspense fallback={<Spinner label="Abrindo o painel…" fullscreen />}>
             <AdminApp />
           </Suspense>
         }
