@@ -8,8 +8,8 @@ export function LogoFull({ className = '' }: { className?: string }) {
 }
 
 /** Só o nome em letra cursiva, para cabeçalhos pequenos. Proporção 600×157. */
-export function LogoName({ className = '' }: { className?: string }) {
-  return <img src={logoName} alt="Bar do Marcelo" width={600} height={157} className={className} />
+export function LogoName({ className = '', alt = 'Bar do Marcelo' }: { className?: string; alt?: string }) {
+  return <img src={logoName} alt={alt} width={600} height={157} className={className} />
 }
 
 /** Caneca com as espigas, sem texto — decorativo. */

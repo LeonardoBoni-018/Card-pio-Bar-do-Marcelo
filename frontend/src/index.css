@@ -111,7 +111,7 @@
 
 @layer base {
   html {
-    scroll-padding-top: 4.5rem;
+    scroll-padding-top: 8rem;
   }
   body {
     background: var(--color-fundo);

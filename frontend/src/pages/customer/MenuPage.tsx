@@ -7,7 +7,8 @@ import { Icon } from '../../components/ui/Icon'
 import { categoryIcon } from '../../lib/categoryIcon'
 import { filterMenu } from '../../lib/menu'
 import { useSlow } from '../../lib/useSlow'
-import { BrandHeader } from './BrandHeader'
+import { KitchenHoursList } from './KitchenStatus'
+import { SiteHeader } from './SiteHeader'
 import { CategoryNav } from './CategoryNav'
 import { ItemDialog } from './ItemDialog'
 import { MenuItemRow } from './MenuItemRow'
@@ -90,7 +91,7 @@ export default function MenuPage() {
 
   return (
     <div className="min-h-screen">
-      <BrandHeader />
+      <SiteHeader />
       <main>
         <div className="mx-auto max-w-3xl px-4 pb-4 pt-5">
           <label htmlFor="busca" className="sr-only">
@@ -185,7 +186,14 @@ export default function MenuPage() {
             <Icon name="store" className="size-5 text-sol-300" />
             Bar &amp; Mercearia Planalto
           </p>
-          <p className="flex items-center gap-2">
+          <div className="mt-2 w-full max-w-xs rounded-2xl bg-white/10 px-2 py-2 text-left text-sol-100">
+            <p className="flex items-center gap-2 px-3 pb-1 text-sm font-extrabold text-white">
+              <Icon name="clock" className="size-4 text-sol-300" />
+              Horário da cozinha
+            </p>
+            <KitchenHoursList className="text-sm" />
+          </div>
+          <p className="mt-2 flex items-center gap-2">
             <Icon name="info" className="size-4" />
             Preços sujeitos a alteração
           </p>

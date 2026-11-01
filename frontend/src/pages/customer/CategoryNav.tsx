@@ -20,7 +20,7 @@ export function CategoryNav({ categories, activeId, onSelect }: CategoryNavProps
   }, [activeId])
 
   return (
-    <nav aria-label="Categorias do cardápio" className="sticky top-0 z-20 border-b border-brasa-100 bg-white">
+    <nav aria-label="Categorias do cardápio" className="sticky top-[3.875rem] z-20 md:top-[4.375rem] border-b border-brasa-100 bg-white">
       <div className="mx-auto flex max-w-3xl snap-x gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none]">
         {categories.map((category) => {
           const active = category.id === activeId

@@ -54,7 +54,26 @@ test.describe('cliente no celular', () => {
     await page.getByRole('heading', { name: 'Bebidas' }).scrollIntoViewIfNeeded()
     const nav = page.getByRole('navigation', { name: 'Categorias do cardápio' })
     await expect(nav).toBeInViewport()
-    expect((await nav.boundingBox())!.y).toBeLessThanOrEqual(2)
+    // as categorias grudam logo abaixo do cabeçalho fixo (que também continua no topo)
+    const header = (await page.getByRole('banner').boundingBox())!
+    expect(header.y).toBeLessThanOrEqual(2)
+    expect(Math.abs((await nav.boundingBox())!.y - (header.y + header.height))).toBeLessThanOrEqual(2)
+  })
+
+  test('o horário da cozinha continua visível no topo mesmo rolando até o fim', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('heading', { name: 'Bebidas' }).waitFor()
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+    const selo = page.getByRole('button', { name: /Ver horário da cozinha/ })
+    await expect(selo).toBeInViewport()
+    expect((await selo.boundingBox())!.y).toBeLessThanOrEqual(60)
+    await selo.click()
+    const dialog = page.getByRole('dialog', { name: 'Horário da cozinha' })
+    await expect(dialog).toContainText('Terça a sexta')
+    await expect(dialog).toContainText('15:30 às 22:00')
+    await expect(dialog).toContainText('Sábado')
+    await expect(dialog).toContainText('10:30 às 17:00')
+    await dialog.getByRole('button', { name: 'Fechar' }).click()
   })
 })
 

@@ -55,6 +55,10 @@ for (const tela of TELAS) {
       await page.getByRole('heading', { name: 'Cervejas' }).waitFor()
       await semEstouro(page)
       await expect(page.getByRole('img', { name: /Bar do Marcelo/ })).toBeVisible()
+      // o selo do horário da cozinha cabe inteiro (sem "Cozinha f…") em qualquer largura
+      const selo = page.getByRole('button', { name: /Ver horário da cozinha/ })
+      await expect(selo).toBeInViewport()
+      expect(await selo.locator('span.truncate').evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth + 1).map((e) => e.textContent))).toEqual([])
       await foto(page, `${tela.nome}-cliente`)
       await page.getByRole('button', { name: /Chopp/ }).click()
       const dialog = page.getByRole('dialog', { name: 'Chopp' })
