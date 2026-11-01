@@ -40,7 +40,7 @@ const matches = (ifNoneMatch: string | undefined, etag: string): boolean =>
 
 export async function getMenu(sql: Sql, ifNoneMatch?: string): Promise<Reply> {
   const rows = await sql(
-    `select c.id as category_id, c.name as category_name, i.id, i.name, i.description, i.price, i.image_filename, i.featured
+    `select c.id as category_id, c.name as category_name, i.id, i.name, i.description, i.price, i.price_unit, i.image_filename, i.featured
        from menu_item i join category c on c.id = i.category_id
       where i.available = true
       order by c.display_order, c.name, i.featured desc, i.name`,
@@ -59,6 +59,7 @@ export async function getMenu(sql: Sql, ifNoneMatch?: string): Promise<Reply> {
       name: String(row.name),
       description: String(row.description ?? ''),
       price: Number(row.price), // NUMERIC(10,2) chega como texto
+      priceUnit: row.price_unit === 'KG' ? 'KG' : 'UNIT',
       imageUrl: row.image_filename ? `/api/images/${String(row.image_filename)}` : null,
       featured: Boolean(row.featured),
     })

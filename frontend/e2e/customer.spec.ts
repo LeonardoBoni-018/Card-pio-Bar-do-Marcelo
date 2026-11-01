@@ -56,4 +56,13 @@ test.describe('cardápio do cliente', () => {
     expect(response.headers()['cache-control']).toContain('no-cache')
     expect(response.headers()['etag']).toBeTruthy()
   })
+
+  test('item vendido por quilo mostra "/kg" no cardápio e no detalhe', async ({ page }) => {
+    await page.goto('/')
+    const linha = page.getByRole('button', { name: /Panceta de Rolo, R\$\s?70,00 o quilo/ })
+    await expect(linha).toBeVisible()
+    await expect(linha.getByText('/kg')).toBeVisible()
+    await linha.click()
+    await expect(page.getByRole('dialog', { name: 'Porção de Panceta de Rolo' }).getByText('/kg')).toBeVisible()
+  })
 })

@@ -37,6 +37,7 @@ export const toInput = (item: AdminItem, changes: Partial<ItemInput> = {}): Item
   name: item.name,
   description: item.description,
   price: item.price,
+  priceUnit: item.priceUnit ?? 'UNIT',
   categoryId: item.categoryId,
   imageFilename: item.imageFilename,
   available: item.available,

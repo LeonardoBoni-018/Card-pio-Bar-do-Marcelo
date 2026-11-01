@@ -249,4 +249,44 @@ class AdminItemApiTest extends ApiTestSupport {
         mvc.perform(get("/api/admin/items/{id}", item.getId()).header("Authorization", bearer()))
                 .andExpect(header().doesNotExist("Location"));
     }
+
+    @Test
+    @DisplayName("preço por unidade é o padrão; priceUnit=KG vale para o quilo e pode ser alterado")
+    void priceUnit() throws Exception {
+        Category snacks = category("Porções", 1);
+        // sem informar → UNIT
+        mvc.perform(post("/api/admin/items").header("Authorization", bearer())
+                        .contentType(MediaType.APPLICATION_JSON).content(write(itemBody("Batata", "32.00", snacks.getId()))))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.priceUnit").value("UNIT"));
+
+        Map<String, Object> kg = itemBody("Panceta", "70.00", snacks.getId());
+        kg.put("priceUnit", "KG");
+        String created = mvc.perform(post("/api/admin/items").header("Authorization", bearer())
+                        .contentType(MediaType.APPLICATION_JSON).content(write(kg)))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.priceUnit").value("KG"))
+                .andReturn().getResponse().getContentAsString();
+        long id = json.readTree(created).get("id").asLong();
+
+        // visível no cardápio público e na leitura do item
+        mvc.perform(get("/api/menu")).andExpect(jsonPath("$[0].items[?(@.name=='Panceta')].priceUnit").value("KG"));
+        mvc.perform(get("/api/admin/items/" + id).header("Authorization", bearer())).andExpect(jsonPath("$.priceUnit").value("KG"));
+
+        // volta para unidade
+        kg.put("priceUnit", "UNIT");
+        mvc.perform(put("/api/admin/items/" + id).header("Authorization", bearer())
+                        .contentType(MediaType.APPLICATION_JSON).content(write(kg)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.priceUnit").value("UNIT"));
+    }
+
+    @Test
+    @DisplayName("unidade de preço desconhecida → 400")
+    void invalidPriceUnit() throws Exception {
+        Category snacks = category("Porções", 1);
+        Map<String, Object> body = itemBody("Panceta", "70.00", snacks.getId());
+        body.put("priceUnit", "LITRO");
+        mvc.perform(post("/api/admin/items").header("Authorization", bearer())
+                        .contentType(MediaType.APPLICATION_JSON).content(write(body)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.priceUnit").exists());
+    }
 }

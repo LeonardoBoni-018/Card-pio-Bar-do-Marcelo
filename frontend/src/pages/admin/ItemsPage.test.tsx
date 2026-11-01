@@ -228,7 +228,7 @@ describe('ItemsPage (proprietário)', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Destacar Chopp' }))
 
-    await waitFor(() => expect(sent).toEqual({ name: 'Chopp', description: 'Copo 300 ml', price: 8.5, categoryId: 1, imageFilename: null, available: true, featured: true }))
+    await waitFor(() => expect(sent).toEqual({ name: 'Chopp', description: 'Copo 300 ml', price: 8.5, priceUnit: 'UNIT', categoryId: 1, imageFilename: null, available: true, featured: true }))
     expect(await screen.findByText('“Chopp” ganhou destaque.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Destacar Batata Frita' })).toHaveAttribute('aria-pressed', 'true')
   })

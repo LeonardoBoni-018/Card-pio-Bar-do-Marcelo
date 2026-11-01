@@ -44,7 +44,7 @@ public class ItemService {
     public ItemAdminResponse create(ItemRequest request) {
         Category category = findCategory(request.categoryId());
         requireImage(request.imageFilename());
-        MenuItem item = items.save(new MenuItem(request.name().trim(), request.description(), request.price(),
+        MenuItem item = items.save(new MenuItem(request.name().trim(), request.description(), request.price(), request.unit(),
                 request.imageFilename(), flag(request.available(), true), flag(request.featured(), false), category));
         events.publishEvent(new MenuChangedEvent());
         return ItemAdminResponse.from(item);
@@ -58,7 +58,7 @@ public class ItemService {
         if (!Objects.equals(oldImage, request.imageFilename())) {
             requireImage(request.imageFilename());
         }
-        item.change(request.name().trim(), request.description(), request.price(), request.imageFilename(),
+        item.change(request.name().trim(), request.description(), request.price(), request.unit(), request.imageFilename(),
                 flag(request.available(), true), flag(request.featured(), false), category);
         if (oldImage != null && !oldImage.equals(request.imageFilename())) {
             images.deleteAfterCommit(oldImage);

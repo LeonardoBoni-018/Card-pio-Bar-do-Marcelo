@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { PublicItem } from '../../api/types'
-import { formatBRL } from '../../lib/format'
+import { PriceTag } from '../../components/ui/PriceTag'
 import { IconFilled } from '../../components/ui/Icon'
 import { ItemPhoto } from './MenuItemRow'
 
@@ -39,7 +39,7 @@ export function ItemDialog({ item, onClose }: { item: PublicItem | null; onClose
                 )}
                 {item.name}
               </h2>
-              <p className="rounded-lg bg-sol-100 px-2 text-2xl font-extrabold tabular-nums text-brasa-700 ring-1 ring-sol-500">{formatBRL(item.price)}</p>
+              <p className="rounded-lg bg-sol-100 px-2 text-2xl font-extrabold tabular-nums text-brasa-700 ring-1 ring-sol-500"><PriceTag price={item.price} unit={item.priceUnit} /></p>
             </div>
             {item.description && <p className="mt-3 text-lg leading-snug text-tinta-700">{item.description}</p>}
             <button

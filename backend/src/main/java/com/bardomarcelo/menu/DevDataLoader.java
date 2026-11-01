@@ -3,6 +3,7 @@ package com.bardomarcelo.menu;
 import com.bardomarcelo.menu.category.Category;
 import com.bardomarcelo.menu.category.CategoryRepository;
 import com.bardomarcelo.menu.item.MenuItem;
+import com.bardomarcelo.menu.item.PriceUnit;
 import com.bardomarcelo.menu.item.MenuItemRepository;
 import java.math.BigDecimal;
 import org.springframework.boot.ApplicationArguments;
@@ -39,6 +40,7 @@ class DevDataLoader implements ApplicationRunner {
         add("Batata Frita", "Porção crocante com cheddar e bacon", "32.00", true, snacks);
         add("Calabresa Acebolada", "Calabresa fatiada com cebola e pão", "36.00", false, snacks);
         add("Frango à Passarinho", "Frito na hora · serve 3 pessoas", "42.00", false, snacks);
+        items.save(new MenuItem("Porção de Panceta de Rolo", "Crocante, vendida no peso", new BigDecimal("70.00"), PriceUnit.KG, null, true, false, snacks));
         add("Refrigerante Lata", "Coca, Guaraná ou Fanta", "6.00", false, drinks);
         add("Suco Natural", "Laranja, limão ou maracujá", "8.00", false, drinks);
     }

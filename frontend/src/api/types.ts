@@ -1,8 +1,13 @@
+/** Como o preço é cobrado: por unidade/porção (padrão) ou por quilo. */
+export type PriceUnit = 'UNIT' | 'KG'
+
 export interface PublicItem {
   id: number
   name: string
   description: string
   price: number
+  /** Ausente em respostas antigas (= por unidade). */
+  priceUnit?: PriceUnit
   imageUrl: string | null
   featured: boolean
 }
@@ -24,6 +29,7 @@ export interface AdminItem {
   name: string
   description: string
   price: number
+  priceUnit?: PriceUnit
   imageFilename: string | null
   imageUrl: string | null
   available: boolean
@@ -37,6 +43,7 @@ export interface ItemInput {
   name: string
   description: string
   price: number
+  priceUnit: PriceUnit
   categoryId: number
   imageFilename: string | null
   available: boolean

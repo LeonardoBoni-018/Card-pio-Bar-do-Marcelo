@@ -15,7 +15,7 @@ import { cardClass, PageHeader } from '../../components/ui/Layout'
 import { Spinner } from '../../components/ui/Spinner'
 import { Switch } from '../../components/ui/Switch'
 import { useToast } from '../../components/ui/Toast'
-import { formatBRL } from '../../lib/format'
+import { PriceTag } from '../../components/ui/PriceTag'
 
 type Filtro = 'indisponiveis' | 'sem-foto' | 'destaques'
 const FILTROS: Array<{ id: Filtro; label: string; icon: IconName; test: (item: AdminItem) => boolean }> = [
@@ -244,7 +244,7 @@ export default function ItemsPage() {
                           {item.categoryName}
                         </span>
                         <span aria-hidden="true">·</span>
-                        <span className="rounded-md bg-sol-100 px-1.5 font-extrabold text-brasa-700">{formatBRL(item.price)}</span>
+                        <PriceTag price={item.price} unit={item.priceUnit} className="rounded-md bg-sol-100 px-1.5 font-extrabold text-brasa-700" />
                         {item.featured && (
                           <>
                             <span aria-hidden="true">·</span>

@@ -189,4 +189,15 @@ describe('MenuPage (cliente)', () => {
     Object.defineProperty(window, 'scrollY', { value: 0, configurable: true })
     vi.unstubAllGlobals()
   })
+
+  it('item vendido por quilo mostra "/kg" no preço, no rótulo e no detalhe', async () => {
+    serve([{ id: 1, name: 'Porções', items: [{ id: 5, name: 'Panceta de rolo', description: 'Crocante', price: 70, priceUnit: 'KG', imageUrl: null, featured: false }] }])
+    const user = userEvent.setup()
+    renderApp(<MenuPage />)
+
+    const row = await screen.findByRole('button', { name: /Panceta de rolo, R\$\s?70,00 o quilo/ })
+    expect(within(row).getByText('/kg')).toBeInTheDocument()
+    await user.click(row)
+    expect(within(screen.getByRole('dialog', { name: 'Panceta de rolo' })).getByText('/kg')).toBeInTheDocument()
+  })
 })

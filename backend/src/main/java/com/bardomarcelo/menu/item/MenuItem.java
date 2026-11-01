@@ -3,6 +3,8 @@ package com.bardomarcelo.menu.item;
 import com.bardomarcelo.menu.category.Category;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,6 +36,10 @@ public class MenuItem {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "price_unit", nullable = false, length = 10)
+    private PriceUnit priceUnit = PriceUnit.UNIT;
+
     @Column(name = "image_filename", length = 100)
     private String imageFilename;
 
@@ -58,11 +64,17 @@ public class MenuItem {
 
     public MenuItem(String name, String description, BigDecimal price, String imageFilename,
                     boolean available, boolean featured, Category category) {
-        change(name, description, price, imageFilename, available, featured, category);
+        this(name, description, price, PriceUnit.UNIT, imageFilename, available, featured, category);
     }
 
-    public void change(String name, String description, BigDecimal price, String imageFilename,
+    public MenuItem(String name, String description, BigDecimal price, PriceUnit priceUnit, String imageFilename,
+                    boolean available, boolean featured, Category category) {
+        change(name, description, price, priceUnit, imageFilename, available, featured, category);
+    }
+
+    public void change(String name, String description, BigDecimal price, PriceUnit priceUnit, String imageFilename,
                        boolean available, boolean featured, Category category) {
+        this.priceUnit = priceUnit == null ? PriceUnit.UNIT : priceUnit;
         this.name = name;
         this.description = description == null ? "" : description;
         this.price = price;
@@ -95,6 +107,7 @@ public class MenuItem {
     public String getName() { return name; }
     public String getDescription() { return description; }
     public BigDecimal getPrice() { return price; }
+    public PriceUnit getPriceUnit() { return priceUnit; }
     public String getImageFilename() { return imageFilename; }
     public boolean isAvailable() { return available; }
     public boolean isFeatured() { return featured; }

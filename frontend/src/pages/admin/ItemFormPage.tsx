@@ -1,71 +1,58 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router";
-import { z } from "zod";
-import { ApiError } from "../../api/client";
-import { createItem, updateItem } from "../../api/endpoints";
-import { keys, useAdminItem, useCategories } from "../../api/queries";
-import type { AdminItem, Category, ItemInput } from "../../api/types";
-import { ErrorState } from "../../components/ErrorState";
-import { Button } from "../../components/ui/Button";
-import { Icon } from "../../components/ui/Icon";
-import { CardTitle, cardClass, PageHeader } from "../../components/ui/Layout";
-import { Field, describedBy, inputClass } from "../../components/ui/Field";
-import { Spinner } from "../../components/ui/Spinner";
-import { Switch } from "../../components/ui/Switch";
-import { useToast } from "../../components/ui/Toast";
-import { parsePrice, priceToInput } from "../../lib/format";
-import { ImageUpload } from "./ImageUpload";
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
+import { Controller, useForm, useWatch } from 'react-hook-form'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
+import { z } from 'zod'
+import { ApiError } from '../../api/client'
+import { createItem, updateItem } from '../../api/endpoints'
+import { keys, useAdminItem, useCategories } from '../../api/queries'
+import type { AdminItem, Category, ItemInput } from '../../api/types'
+import { ErrorState } from '../../components/ErrorState'
+import { Button } from '../../components/ui/Button'
+import { Icon } from '../../components/ui/Icon'
+import { CardTitle, cardClass, PageHeader } from '../../components/ui/Layout'
+import { Field, describedBy, inputClass } from '../../components/ui/Field'
+import { Spinner } from '../../components/ui/Spinner'
+import { Switch } from '../../components/ui/Switch'
+import { useToast } from '../../components/ui/Toast'
+import { parsePrice, priceToInput } from '../../lib/format'
+import { ImageUpload } from './ImageUpload'
 
 const schema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "Informe o nome do item.")
-    .max(100, "Use no máximo 100 caracteres."),
-  description: z.string().max(500, "Use no máximo 500 caracteres."),
+  name: z.string().trim().min(1, 'Informe o nome do item.').max(100, 'Use no máximo 100 caracteres.'),
+  description: z.string().max(500, 'Use no máximo 500 caracteres.'),
   price: z
     .string()
     .trim()
-    .min(1, "Informe o preço.")
-    .refine(
-      (v) => parsePrice(v) !== null,
-      "Preço inválido. Use números, por exemplo 8,50.",
-    )
-    .refine((v) => (parsePrice(v) ?? 0) <= 99_999_999.99, "Preço alto demais."),
-  categoryId: z.string().min(1, "Escolha uma categoria."),
+    .min(1, 'Informe o preço.')
+    .refine((v) => parsePrice(v) !== null, 'Preço inválido. Use números, por exemplo 8,50.')
+    .refine((v) => (parsePrice(v) ?? 0) <= 99_999_999.99, 'Preço alto demais.'),
+  priceUnit: z.enum(['UNIT', 'KG']),
+  categoryId: z.string().min(1, 'Escolha uma categoria.'),
   available: z.boolean(),
   featured: z.boolean(),
   imageFilename: z.string().nullable(),
-});
-type Values = z.infer<typeof schema>;
+})
+type Values = z.infer<typeof schema>
 
 const toValues = (item?: AdminItem): Values => ({
-  name: item?.name ?? "",
-  description: item?.description ?? "",
-  price: item ? priceToInput(item.price) : "",
-  categoryId: item ? String(item.categoryId) : "",
+  name: item?.name ?? '',
+  description: item?.description ?? '',
+  price: item ? priceToInput(item.price) : '',
+  priceUnit: item?.priceUnit ?? 'UNIT',
+  categoryId: item ? String(item.categoryId) : '',
   available: item?.available ?? true,
   featured: item?.featured ?? false,
   imageFilename: item?.imageFilename ?? null,
-});
+})
 
 /** `item` = edição; `template` = cópia de outro item (cadastro novo com os campos preenchidos, sem a foto). */
-function ItemForm({
-  item,
-  template,
-  categories,
-}: {
-  item?: AdminItem;
-  template?: AdminItem;
-  categories: Category[];
-}) {
-  const navigate = useNavigate();
-  const toast = useToast();
-  const queryClient = useQueryClient();
-  const [uploading, setUploading] = useState(false);
+function ItemForm({ item, template, categories }: { item?: AdminItem; template?: AdminItem; categories: Category[] }) {
+  const navigate = useNavigate()
+  const toast = useToast()
+  const queryClient = useQueryClient()
+  const [uploading, setUploading] = useState(false)
 
   const {
     register,
@@ -84,7 +71,7 @@ function ItemForm({
             imageFilename: null,
           }
         : toValues(),
-  });
+  })
 
   const save = useMutation({
     mutationFn: (values: Values) => {
@@ -92,77 +79,48 @@ function ItemForm({
         name: values.name.trim(),
         description: values.description.trim(),
         price: parsePrice(values.price) as number,
+        priceUnit: values.priceUnit,
         categoryId: Number(values.categoryId),
         imageFilename: values.imageFilename,
         available: values.available,
         featured: values.featured,
-      };
-      return item ? updateItem(item.id, input) : createItem(input);
+      }
+      return item ? updateItem(item.id, input) : createItem(input)
     },
     onSuccess: (saved) => {
-      void queryClient.invalidateQueries({ queryKey: keys.items });
-      void queryClient.invalidateQueries({ queryKey: keys.menu });
-      toast.success(
-        item
-          ? `“${saved.name}” foi atualizado.`
-          : `“${saved.name}” foi adicionado ao cardápio.`,
-      );
-      navigate("/admin/items");
+      void queryClient.invalidateQueries({ queryKey: keys.items })
+      void queryClient.invalidateQueries({ queryKey: keys.menu })
+      toast.success(item ? `“${saved.name}” foi atualizado.` : `“${saved.name}” foi adicionado ao cardápio.`)
+      navigate('/admin/items')
     },
     onError: (error: ApiError) => {
-      const fields = Object.entries(error.fieldErrors).filter(
-        ([field]) => field in schema.shape,
-      );
-      fields.forEach(([field, message]) =>
-        setError(field as keyof Values, { message }),
-      );
-      if (fields.length === 0) toast.error(error.message);
+      const fields = Object.entries(error.fieldErrors).filter(([field]) => field in schema.shape)
+      fields.forEach(([field, message]) => setError(field as keyof Values, { message }))
+      if (fields.length === 0) toast.error(error.message)
     },
-  });
+  })
 
-  const description = useWatch({ control, name: "description" });
+  const description = useWatch({ control, name: 'description' })
+  const priceUnit = useWatch({ control, name: 'priceUnit' })
 
   return (
-    <form
-      onSubmit={handleSubmit((values) => save.mutate(values))}
-      noValidate
-      className="mt-5 grid gap-5 pb-20 lg:grid-cols-[18rem_1fr]"
-    >
-      <section
-        aria-labelledby="titulo-imagem"
-        className={`${cardClass} self-start`}
-      >
+    <form onSubmit={handleSubmit((values) => save.mutate(values))} noValidate className="mt-5 grid gap-5 pb-20 lg:grid-cols-[18rem_1fr]">
+      <section aria-labelledby="titulo-imagem" className={`${cardClass} self-start`}>
         <CardTitle icon="camera" id="titulo-imagem">
           Imagem do prato
         </CardTitle>
         <Controller
           control={control}
           name="imageFilename"
-          render={({ field }) => (
-            <ImageUpload
-              filename={field.value}
-              currentUrl={item?.imageUrl ?? null}
-              onChange={field.onChange}
-              onBusyChange={setUploading}
-            />
-          )}
+          render={({ field }) => <ImageUpload filename={field.value} currentUrl={item?.imageUrl ?? null} onChange={field.onChange} onBusyChange={setUploading} />}
         />
       </section>
 
       <div className="space-y-5">
-        <section
-          aria-label="Dados do item"
-          className={`${cardClass} space-y-5`}
-        >
+        <section aria-label="Dados do item" className={`${cardClass} space-y-5`}>
           <CardTitle icon="pencil">Dados do item</CardTitle>
           <Field id="name" label="Nome" error={errors.name?.message}>
-            <input
-              id="name"
-              aria-invalid={!!errors.name}
-              aria-describedby={describedBy("name", errors.name?.message)}
-              className={inputClass}
-              {...register("name")}
-            />
+            <input id="name" aria-invalid={!!errors.name} aria-describedby={describedBy('name', errors.name?.message)} className={inputClass} {...register('name')} />
           </Field>
 
           <Field
@@ -175,42 +133,52 @@ function ItemForm({
               id="description"
               rows={3}
               aria-invalid={!!errors.description}
-              aria-describedby={describedBy(
-                "description",
-                errors.description?.message,
-                "x",
-              )}
+              aria-describedby={describedBy('description', errors.description?.message, 'x')}
               className={inputClass}
-              {...register("description")}
+              {...register('description')}
             />
           </Field>
 
+          <fieldset>
+            <legend className="mb-1.5 text-sm font-bold text-tinta-700">Preço cobrado por</legend>
+            <div className="grid grid-cols-2 gap-2">
+              {(
+                [
+                  ['UNIT', 'Por unidade', 'tag'],
+                  ['KG', 'Por quilo (kg)', 'scale'],
+                ] as const
+              ).map(([value, label, icon]) => (
+                <label
+                  key={value}
+                  className="press flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-3 text-center text-sm font-extrabold text-tinta-700 ring-1 ring-tinta-300 has-[:checked]:bg-sol-300 has-[:checked]:text-tinta-900 has-[:checked]:ring-2 has-[:checked]:ring-brasa-600 has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ceu-600 md:min-h-11"
+                >
+                  <input type="radio" value={value} className="sr-only" {...register('priceUnit')} />
+                  <Icon name={icon} />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field id="price" label="Preço (R$)" error={errors.price?.message}>
+            <Field id="price" label="Preço (R$)" error={errors.price?.message} hint={priceUnit === 'KG' ? 'Valor de 1 kg (ex.: 70,00 por quilo).' : undefined}>
               <input
                 id="price"
                 inputMode="decimal"
                 placeholder="0,00"
                 aria-invalid={!!errors.price}
-                aria-describedby={describedBy("price", errors.price?.message)}
+                aria-describedby={describedBy('price', errors.price?.message)}
                 className={inputClass}
-                {...register("price")}
+                {...register('price')}
               />
             </Field>
-            <Field
-              id="categoryId"
-              label="Categoria"
-              error={errors.categoryId?.message}
-            >
+            <Field id="categoryId" label="Categoria" error={errors.categoryId?.message}>
               <select
                 id="categoryId"
                 aria-invalid={!!errors.categoryId}
-                aria-describedby={describedBy(
-                  "categoryId",
-                  errors.categoryId?.message,
-                )}
+                aria-describedby={describedBy('categoryId', errors.categoryId?.message)}
                 className={inputClass}
-                {...register("categoryId")}
+                {...register('categoryId')}
               >
                 <option value="">Escolha…</option>
                 {categories.map((c) => (
@@ -230,11 +198,7 @@ function ItemForm({
             name="available"
             render={({ field }) => (
               <label className="flex items-center gap-3 font-bold">
-                <Switch
-                  checked={field.value}
-                  onChange={field.onChange}
-                  label="Disponível no cardápio"
-                />
+                <Switch checked={field.value} onChange={field.onChange} label="Disponível no cardápio" />
                 <Icon name="eye" className="size-5 text-brasa-700" />
                 Disponível no cardápio
               </label>
@@ -245,11 +209,7 @@ function ItemForm({
             name="featured"
             render={({ field }) => (
               <label className="flex items-center gap-3 font-bold">
-                <Switch
-                  checked={field.value}
-                  onChange={field.onChange}
-                  label="Destacar item"
-                />
+                <Switch checked={field.value} onChange={field.onChange} label="Destacar item" />
                 <Icon name="star" className="size-5 text-brasa-700" />
                 Destacar item
               </label>
@@ -265,74 +225,49 @@ function ItemForm({
           >
             Cancelar
           </Link>
-          <Button
-            type="submit"
-            className="flex-[2] md:flex-none"
-            loading={save.isPending || uploading}
-          >
-            {save.isPending
-              ? "Salvando…"
-              : uploading
-                ? "Enviando foto…"
-                : "Salvar item"}
+          <Button type="submit" className="flex-[2] md:flex-none" loading={save.isPending || uploading}>
+            {save.isPending ? 'Salvando…' : uploading ? 'Enviando foto…' : 'Salvar item'}
           </Button>
         </div>
       </div>
     </form>
-  );
+  )
 }
 
 export default function ItemFormPage() {
-  const { id } = useParams();
-  const itemId = id ? Number(id) : undefined;
-  const copyId = Number(useSearchParams()[0].get("copiar")) || undefined;
-  const query = useAdminItem(itemId ?? copyId);
-  const categories = useCategories();
+  const { id } = useParams()
+  const itemId = id ? Number(id) : undefined
+  const copyId = Number(useSearchParams()[0].get('copiar')) || undefined
+  const query = useAdminItem(itemId ?? copyId)
+  const categories = useCategories()
 
   return (
     <div className="mx-auto max-w-4xl">
-      <Link
-        to="/admin/items"
-        className="mb-2 inline-flex min-h-11 items-center gap-1 text-base font-bold text-brasa-700 md:text-sm"
-      >
+      <Link to="/admin/items" className="mb-2 inline-flex min-h-11 items-center gap-1 text-base font-bold text-brasa-700 md:text-sm">
         ← Itens do cardápio
       </Link>
       <PageHeader
-        icon={itemId ? "pencil" : copyId ? "copy" : "plus"}
-        title={itemId ? "Editar item" : copyId ? "Duplicar item" : "Novo item"}
+        icon={itemId ? 'pencil' : copyId ? 'copy' : 'plus'}
+        title={itemId ? 'Editar item' : copyId ? 'Duplicar item' : 'Novo item'}
         subtitle="Preencha os dados e salve para publicar no cardápio."
       />
       {/* o formulário só aparece com tudo pronto: o <select> de categoria precisa das opções para mostrar o valor salvo */}
-      {(categories.isPending ||
-        (itemId !== undefined && query.isPending) ||
-        (copyId !== undefined && query.isPending)) &&
-        !categories.isError &&
-        !query.isError && <Spinner label="Carregando o item…" />}
+      {(categories.isPending || (itemId !== undefined && query.isPending) || (copyId !== undefined && query.isPending)) && !categories.isError && !query.isError && (
+        <Spinner label="Carregando o item…" />
+      )}
       {categories.isError && (
         <div className="mt-6">
-          <ErrorState
-            message={categories.error.message}
-            onRetry={() => void categories.refetch()}
-          />
+          <ErrorState message={categories.error.message} onRetry={() => void categories.refetch()} />
         </div>
       )}
       {(itemId ?? copyId) !== undefined && query.isError && (
         <div className="mt-6">
-          <ErrorState
-            message={query.error.message}
-            onRetry={() => void query.refetch()}
-          />
+          <ErrorState message={query.error.message} onRetry={() => void query.refetch()} />
         </div>
       )}
-      {categories.data &&
-        ((itemId === undefined && copyId === undefined) || query.data) && (
-          <ItemForm
-            key={itemId ?? `copia-${copyId ?? "novo"}`}
-            item={itemId ? query.data : undefined}
-            template={copyId ? query.data : undefined}
-            categories={categories.data}
-          />
-        )}
+      {categories.data && ((itemId === undefined && copyId === undefined) || query.data) && (
+        <ItemForm key={itemId ?? `copia-${copyId ?? 'novo'}`} item={itemId ? query.data : undefined} template={copyId ? query.data : undefined} categories={categories.data} />
+      )}
     </div>
-  );
+  )
 }

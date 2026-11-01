@@ -17,5 +17,16 @@ public record ItemRequest(
         @NotNull(message = "a categoria é obrigatória") Long categoryId,
         @Pattern(regexp = "^[0-9a-f-]{36}\\.(jpg|png)$", message = "nome de imagem inválido") String imageFilename,
         Boolean available,
-        Boolean featured) {
+        Boolean featured,
+        @Pattern(regexp = "^(UNIT|KG)?$", message = "unidade de preço inválida (use UNIT ou KG)") String priceUnit) {
+
+    /** Atalho sem a unidade de preço (= por unidade). */
+    public ItemRequest(String name, String description, BigDecimal price, Long categoryId, String imageFilename,
+                       Boolean available, Boolean featured) {
+        this(name, description, price, categoryId, imageFilename, available, featured, null);
+    }
+
+    public PriceUnit unit() {
+        return PriceUnit.parse(priceUnit);
+    }
 }

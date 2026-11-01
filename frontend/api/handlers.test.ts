@@ -19,11 +19,11 @@ beforeEach(() => sql.mockReset())
 
 describe('/api/fast/menu', () => {
   it('lê o cardápio e responde JSON', async () => {
-    sql.mockResolvedValue([{ category_id: '1', category_name: 'Cervejas', id: '7', name: 'Chopp', description: null, price: '8.50', image_filename: null, featured: false }])
+    sql.mockResolvedValue([{ category_id: '1', category_name: 'Cervejas', id: '7', name: 'Chopp', description: null, price: '8.50', price_unit: 'UNIT', image_filename: null, featured: false }])
     const res = await call(menu, 'GET', '/api/fast/menu')
     expect(res.statusCode).toBe(200)
     expect(JSON.parse(String(res.body))).toEqual([
-      { id: 1, name: 'Cervejas', items: [{ id: 7, name: 'Chopp', description: '', price: 8.5, imageUrl: null, featured: false }] },
+      { id: 1, name: 'Cervejas', items: [{ id: 7, name: 'Chopp', description: '', price: 8.5, priceUnit: 'UNIT', imageUrl: null, featured: false }] },
     ])
     expect(res.headers['X-Served-By']).toBe('vercel-function')
   })

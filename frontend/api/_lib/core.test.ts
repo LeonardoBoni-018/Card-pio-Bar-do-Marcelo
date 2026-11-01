@@ -51,6 +51,7 @@ describe.skipIf(!url)('leitura pública (PostgreSQL real, mesmas migrações do 
         name: 'Long Neck',
         description: 'desc Long Neck',
         price: 9, // número, não texto
+        priceUnit: 'UNIT',
         imageUrl: `/api/images/${UUID_A}`,
         featured: true,
       })
@@ -59,10 +60,20 @@ describe.skipIf(!url)('leitura pública (PostgreSQL real, mesmas migrações do 
       expect(typeof menu[0].id).toBe('number')
     })
 
+    it('item vendido por quilo sai com priceUnit KG', async () => {
+      const cat = await category('Porções', 1)
+      await db.exec(
+        `insert into menu_item (name, description, price, price_unit, available, featured, category_id, created_at, updated_at)
+         values ('Panceta', '', 70, 'KG', true, false, $1, now(), now())`,
+        [cat],
+      )
+      expect((await body(getMenu(db.sql)))[0].items[0]).toMatchObject({ name: 'Panceta', price: 70, priceUnit: 'KG' })
+    })
+
     it('não expõe campos internos', async () => {
       await item('Chopp', '8.50', await category('Cervejas', 1), { image: UUID_A })
       const [first] = (await body(getMenu(db.sql)))[0].items
-      expect(Object.keys(first).sort()).toEqual(['description', 'featured', 'id', 'imageUrl', 'name', 'price'])
+      expect(Object.keys(first).sort()).toEqual(['description', 'featured', 'id', 'imageUrl', 'name', 'price', 'priceUnit'])
     })
 
     it('envia cabeçalhos de cache e ETag; revalidação devolve 304 sem corpo', async () => {

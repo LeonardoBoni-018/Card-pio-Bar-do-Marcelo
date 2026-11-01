@@ -76,6 +76,7 @@ describe('ItemFormPage — novo item', () => {
       name: 'Chopp Claro',
       description: 'Copo 300 ml',
       price: 8.5,
+      priceUnit: 'UNIT',
       categoryId: 1,
       imageFilename: null,
       available: true,
@@ -268,5 +269,38 @@ describe('ItemFormPage — editar item', () => {
     expect(screen.getByLabelText('Preço (R$)')).toHaveValue('8,50')
     expect(screen.getByRole('switch', { name: 'Destacar item' })).toBeChecked()
     expect(screen.queryByAltText('Pré-visualização da foto do item')).toBeNull()
+  })
+
+  it('preço por quilo: escolhe "Por quilo (kg)", mostra a dica e envia priceUnit KG', async () => {
+    setup()
+    let sent: { priceUnit?: string; price?: number } = {}
+    server.use(http.post(`${API}/api/admin/items`, async ({ request }) => ((sent = (await request.json()) as typeof sent), HttpResponse.json(adminItem({ priceUnit: 'KG' }), { status: 201 }))))
+    const user = userEvent.setup()
+    await renderForm('/admin/items/new')
+
+    expect(screen.getByRole('radio', { name: 'Por unidade' })).toBeChecked()
+    await user.type(screen.getByLabelText('Nome'), 'Panceta de rolo')
+    await user.type(screen.getByLabelText('Preço (R$)'), '70')
+    await user.selectOptions(screen.getByLabelText('Categoria'), 'Cervejas')
+    await user.click(screen.getByRole('radio', { name: 'Por quilo (kg)' }))
+    expect(screen.getByText(/Valor de 1 kg/)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Salvar item' }))
+
+    expect(await screen.findByRole('heading', { name: 'Lista de itens' })).toBeInTheDocument()
+    expect(sent).toMatchObject({ price: 70, priceUnit: 'KG' })
+  })
+
+  it('editar item vendido por kg já abre com "Por quilo" marcado', async () => {
+    setup()
+    server.use(http.get(`${API}/api/admin/items/9`, () => HttpResponse.json(adminItem({ id: 9, name: 'Panceta', price: 70, priceUnit: 'KG' }))))
+    await renderForm('/admin/items/9')
+    expect(screen.getByRole('radio', { name: 'Por quilo (kg)' })).toBeChecked()
+  })
+
+  it('duplicar item por kg mantém "Por quilo"', async () => {
+    setup()
+    server.use(http.get(`${API}/api/admin/items/9`, () => HttpResponse.json(adminItem({ id: 9, name: 'Panceta', price: 70, priceUnit: 'KG' }))))
+    await renderForm('/admin/items/new?copiar=9')
+    expect(screen.getByRole('radio', { name: 'Por quilo (kg)' })).toBeChecked()
   })
 })

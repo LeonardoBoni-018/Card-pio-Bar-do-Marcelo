@@ -3,7 +3,8 @@ import { publicImageSrc } from '../../api/client'
 import type { PublicItem } from '../../api/types'
 import { LogoMark } from '../../components/Logo'
 import { IconFilled } from '../../components/ui/Icon'
-import { formatBRL } from '../../lib/format'
+import { PriceTag } from '../../components/ui/PriceTag'
+import { formatPriceText } from '../../lib/format'
 
 export function ItemPhoto({ item, className, thumb = false }: { item: PublicItem; className: string; thumb?: boolean }) {
   const [fastFailed, setFastFailed] = useState(false)
@@ -38,7 +39,7 @@ export function MenuItemRow({ item, onOpen, index = 0 }: { item: PublicItem; onO
       <button
         type="button"
         onClick={() => onOpen(item)}
-        aria-label={`${item.name}, ${formatBRL(item.price)}. Ver detalhes`}
+        aria-label={`${item.name}, ${formatPriceText(item.price, item.priceUnit)}. Ver detalhes`}
         className="press grid w-full grid-cols-[6rem_1fr] items-start gap-4 rounded-2xl bg-white p-3 text-left shadow-sm ring-1 ring-brasa-100 active:bg-brasa-50 sm:bg-transparent sm:shadow-none sm:ring-0 sm:hover:bg-brasa-50"
       >
         <ItemPhoto item={item} thumb className="size-24 rounded-xl" />
@@ -53,7 +54,7 @@ export function MenuItemRow({ item, onOpen, index = 0 }: { item: PublicItem; onO
             {item.name}
           </span>
           <span aria-hidden="true" className="order-2 mb-1.5 hidden self-end border-b-2 border-dotted border-laranja-300 sm:block" />
-          <span className="order-3 mt-1 w-fit rounded-lg bg-sol-100 px-2.5 py-0.5 text-lg font-extrabold tabular-nums text-brasa-700 ring-1 ring-sol-500/60 sm:mt-0 sm:bg-transparent sm:px-0 sm:py-0 sm:ring-0">{formatBRL(item.price)}</span>
+          <span className="order-3 mt-1 w-fit rounded-lg bg-sol-100 px-2.5 py-0.5 text-lg font-extrabold tabular-nums text-brasa-700 ring-1 ring-sol-500/60 sm:mt-0 sm:bg-transparent sm:px-0 sm:py-0 sm:ring-0"><PriceTag price={item.price} unit={item.priceUnit} /></span>
           {item.description && (
             <span className="order-2 line-clamp-2 text-sm leading-snug text-tinta-500 sm:order-4 sm:col-span-3">{item.description}</span>
           )}
