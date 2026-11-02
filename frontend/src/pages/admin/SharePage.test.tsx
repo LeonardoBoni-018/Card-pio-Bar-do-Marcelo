@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderApp, signIn } from '../../test/utils'
-import SharePage from './SharePage'
+import SharePage, { OFFICIAL_URL, publicMenuUrl } from './SharePage'
 
 beforeEach(signIn)
 afterEach(() => vi.restoreAllMocks())
@@ -31,5 +31,18 @@ describe('SharePage (divulgação)', () => {
     writeText.mockRejectedValue(new Error('negado'))
     await user.click(screen.getByRole('button', { name: 'Copiar link' }))
     expect(await screen.findByText(/Não deu para copiar/)).toBeInTheDocument()
+  })
+
+  it('o link divulgado é sempre o domínio oficial (inclusive acessando pelo endereço antigo da Vercel)', () => {
+    expect(OFFICIAL_URL).toBe('https://bardomarcelo.com.br/')
+    expect(publicMenuUrl('https://bardomarcelo.vercel.app')).toBe(OFFICIAL_URL)
+    expect(publicMenuUrl('https://card-pio-bar-do-marcelo-frontend-abc.vercel.app')).toBe(OFFICIAL_URL)
+    expect(publicMenuUrl('https://www.bardomarcelo.com.br')).toBe(OFFICIAL_URL)
+    expect(publicMenuUrl('https://bardomarcelo.com.br')).toBe(OFFICIAL_URL)
+  })
+
+  it('em desenvolvimento local usa o próprio endereço', () => {
+    expect(publicMenuUrl('http://localhost:5173')).toBe('http://localhost:5173/')
+    expect(publicMenuUrl('http://127.0.0.1:4173')).toBe('http://127.0.0.1:4173/')
   })
 })

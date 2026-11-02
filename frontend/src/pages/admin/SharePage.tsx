@@ -5,10 +5,23 @@ import { Icon } from '../../components/ui/Icon'
 import { CardTitle, cardClass, PageHeader } from '../../components/ui/Layout'
 import { useToast } from '../../components/ui/Toast'
 
+/** Endereço oficial do cardápio (o que vai no QR code impresso). */
+export const OFFICIAL_URL = 'https://bardomarcelo.com.br/'
+
+/**
+ * Link divulgado: sempre o domínio oficial, mesmo que o dono esteja usando o endereço antigo (*.vercel.app).
+ * Só em desenvolvimento/testes locais usa o próprio endereço, para o QR apontar para o ambiente de teste.
+ */
+export function publicMenuUrl(origin: string = window.location.origin): string {
+  const { hostname } = new URL(origin)
+  const local = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.local')
+  return local ? `${origin}/` : OFFICIAL_URL
+}
+
 /** Divulgação: link do cardápio, QR code para colar nas mesas e cartaz pronto para imprimir. */
 export default function SharePage() {
   const toast = useToast()
-  const link = window.location.origin + '/'
+  const link = publicMenuUrl()
   const [qr, setQr] = useState<string | null>(null)
 
   useEffect(() => {

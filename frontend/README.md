@@ -64,7 +64,8 @@ O que o **cliente** vê (cardápio e fotos) é lido por duas funções da Vercel
 - **Resumo e filtros rápidos:** total de itens, quantos estão no cardápio agora e atalhos para ver só *Indisponíveis*, *Sem foto* e *Destaques*.
 - **Preço por quilo:** no formulário do item escolha *Por quilo (kg)*; no cardápio o preço aparece como `R$ 70,00/kg` (rótulo para leitores de tela: "R$ 70,00 o quilo"). Padrão continua *Por unidade*. No banco é a coluna `price_unit` (migração V4) e na API o campo `priceUnit` (`UNIT`/`KG`).
 - **Estrela de destaque** em cada item (um toque) e **Duplicar** (cadastro novo já preenchido, sem a foto) para criar variações rápido.
-- **Divulgar:** link do cardápio com botão de copiar, **QR code** e cartaz pronto para imprimir (cole nas mesas e no balcão).
+- **Domínio oficial:** `https://bardomarcelo.com.br` (DNS no Registro.br: registro A → Vercel e CNAME `www` → Vercel; `www` redireciona para o domínio principal). A API no Render aceita esse domínio em `APP_CORS_ORIGINS`.
+- **Divulgar:** link do cardápio com botão de copiar, **QR code** e cartaz pronto para imprimir — o link é sempre o domínio oficial (`OFFICIAL_URL` em `SharePage.tsx`), mesmo acessando o painel pelo endereço antigo da Vercel (cole nas mesas e no balcão).
 
 ## Experiência de uso (UX)
 - **Avisos (toasts)** com ícone, botão de fechar, entrada animada e no máximo 3 na tela; no celular ficam acima da barra de navegação.
