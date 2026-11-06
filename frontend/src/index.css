@@ -198,20 +198,32 @@ dialog[open]::backdrop {
   }
 }
 
-/* Cartaz do QR code: ao imprimir, só ele aparece */
+/* Impressão do cartaz do QR code: só a folha de cartões aparece, no tamanho exato em cm, com linha de corte */
 @media print {
-  body * {
-    visibility: hidden;
+  @page {
+    size: A4;
+    margin: 10mm;
   }
-  .cartaz,
-  .cartaz * {
-    visibility: visible;
+  body > :not(.folha-impressao) {
+    display: none !important;
   }
-  .cartaz {
-    position: absolute;
-    inset: 0 auto auto 0;
-    width: 100%;
+  body {
+    background: #fff !important;
+  }
+  .folha-impressao {
+    flex-wrap: wrap;
+    align-content: flex-start;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .folha-impressao .cartaz {
+    width: var(--cartaz-w) !important;
+    height: var(--cartaz-h) !important;
+    aspect-ratio: auto !important;
+    border-radius: 0;
     box-shadow: none;
-    --tw-ring-shadow: 0 0 #0000;
+    outline: 1px dashed #9a8a8b;
+    outline-offset: -0.5px;
+    break-inside: avoid;
   }
 }
