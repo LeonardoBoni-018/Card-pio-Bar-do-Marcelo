@@ -11,6 +11,7 @@ app:
   admin:
     username: admin
     password: admin12345
+  features.comandas: true   # em desenvolvimento a funcionalidade nova fica ligada
 springdoc:
   api-docs.enabled: true
   swagger-ui.enabled: true

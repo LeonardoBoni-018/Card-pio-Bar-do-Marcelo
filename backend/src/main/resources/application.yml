@@ -59,6 +59,8 @@ app:
   login:
     max-failures: 5
     block-duration: 15m
+  features:
+    comandas: ${APP_FEATURE_COMANDAS:false}   # em construção: só ligar quando for lançar (docs/comandas/ESCOPO.md)
 
 springdoc:
   api-docs.enabled: false

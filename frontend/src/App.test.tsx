@@ -82,6 +82,23 @@ describe('rotas', () => {
   })
 })
 
+describe('área do garçom (em construção)', () => {
+  afterEach(() => vi.unstubAllEnvs())
+
+  it('com a chave desligada, /garcom continua mostrando o cardápio', async () => {
+    vi.stubEnv('VITE_FEATURE_COMANDAS', '')
+    renderAt('/garcom')
+    expect(await screen.findByRole('heading', { name: 'Cervejas' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Área do garçom' })).not.toBeInTheDocument()
+  })
+
+  it('com a chave ligada, /garcom abre a área do garçom', async () => {
+    vi.stubEnv('VITE_FEATURE_COMANDAS', '1')
+    renderAt('/garcom')
+    expect(await screen.findByRole('heading', { name: 'Área do garçom' })).toBeInTheDocument()
+  })
+})
+
 describe('política de novas tentativas', () => {
   const retry = () => createQueryClient().getDefaultOptions().queries?.retry as (count: number, error: Error) => boolean
 
