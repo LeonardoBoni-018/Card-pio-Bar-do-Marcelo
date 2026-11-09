@@ -7,13 +7,16 @@ import { ToastProvider } from '../components/ui/Toast'
 
 export const API = 'http://api.test'
 
-/** JWT de mentira (sem assinatura válida) só com o `exp`, que é o que o front lê. */
-export function fakeJwt(expiresInSeconds = 3600): string {
-  const encode = (value: object) => btoa(JSON.stringify(value)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
-  return `${encode({ alg: 'HS256' })}.${encode({ sub: 'admin', exp: Math.floor(Date.now() / 1000) + expiresInSeconds })}.assinatura`
+/** JWT de mentira (sem assinatura válida) com o que o front lê: `exp`, perfil (`roles`) e nome. */
+export function fakeJwt(expiresInSeconds = 3600, claims: Record<string, unknown> = { roles: ['ADMIN'] }): string {
+  const encode = (value: object) =>
+    btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(value)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+  return `${encode({ alg: 'HS256' })}.${encode({ sub: 'admin', exp: Math.floor(Date.now() / 1000) + expiresInSeconds, ...claims })}.assinatura`
 }
 
 export const signIn = () => session.set(fakeJwt())
+/** Entra como garçom (perfil GARCOM). */
+export const signInWaiter = (name = 'João') => session.set(fakeJwt(3600, { sub: 'joao', roles: ['GARCOM'], uid: 7, name }))
 
 export function renderApp(
   ui: ReactElement,

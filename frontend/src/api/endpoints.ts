@@ -1,5 +1,5 @@
 import { fastReadsEnabled, request } from './client'
-import type { AdminItem, Category, ItemInput, ItemSearch, MenuCategory, Page, TokenResponse } from './types'
+import type { AdminItem, Category, DiningTable, ItemInput, ItemSearch, MenuCategory, Page, TableInput, TokenResponse, Waiter, WaiterInput } from './types'
 
 /**
  * Cardápio público. Com as leituras rápidas ligadas, tenta primeiro a função da Vercel (não dorme) e, se falhar
@@ -61,3 +61,18 @@ export function uploadImage(file: File) {
   form.append('file', file)
   return request<{ filename: string; url: string }>('/api/admin/images', { method: 'POST', form, auth: true })
 }
+
+// ---- Comandas (atrás da chave VITE_FEATURE_COMANDAS) ----
+export const listTables = () => request<DiningTable[]>('/api/admin/mesas', { auth: true })
+export const createTable = (input: TableInput) => request<DiningTable>('/api/admin/mesas', { method: 'POST', json: input, auth: true })
+export const createTablesBatch = (quantity: number, prefix?: string) =>
+  request<DiningTable[]>('/api/admin/mesas/lote', { method: 'POST', json: { quantity, prefix }, auth: true })
+export const updateTable = (id: number, input: TableInput) => request<DiningTable>(`/api/admin/mesas/${id}`, { method: 'PUT', json: input, auth: true })
+export const deleteTable = (id: number) => request<void>(`/api/admin/mesas/${id}`, { method: 'DELETE', auth: true })
+
+export const listWaiters = () => request<Waiter[]>('/api/admin/garcons', { auth: true })
+export const createWaiter = (input: WaiterInput) => request<Waiter>('/api/admin/garcons', { method: 'POST', json: input, auth: true })
+export const updateWaiter = (id: number, input: WaiterInput) => request<Waiter>(`/api/admin/garcons/${id}`, { method: 'PUT', json: input, auth: true })
+
+/** Mesas ativas, para o garçom. */
+export const listServiceTables = () => request<DiningTable[]>('/api/pedidos/mesas', { auth: true })

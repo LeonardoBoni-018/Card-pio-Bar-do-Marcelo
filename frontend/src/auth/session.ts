@@ -2,27 +2,49 @@ import { useSyncExternalStore } from 'react'
 
 const KEY = 'bdm.session'
 
-interface Session {
+/** Perfil de quem entrou: proprietário (painel) ou garçom (comandas). */
+export type Role = 'ADMIN' | 'GARCOM'
+
+export interface Session {
   token: string
   exp: number // segundos desde a época, como no JWT
+  role: Role
+  /** Nome para exibir ("Olá, João"). */
+  name: string
 }
 
-function readExp(token: string): number | null {
+interface Claims {
+  exp?: number
+  sub?: string
+  name?: string
+  roles?: string[]
+}
+
+function readClaims(token: string): Claims | null {
   try {
     const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
-    const { exp } = JSON.parse(atob(payload)) as { exp?: number }
-    return typeof exp === 'number' ? exp : null
+    const bytes = Uint8Array.from(atob(payload), (c) => c.charCodeAt(0))
+    return JSON.parse(new TextDecoder().decode(bytes)) as Claims
   } catch {
     return null
   }
+}
+
+/** Lê validade, perfil e nome do próprio token (a API é quem confere a assinatura e o perfil de verdade). */
+function fromToken(token: string): Session | null {
+  const claims = readClaims(token)
+  if (!claims || typeof claims.exp !== 'number') return null
+  const role: Role = claims.roles?.includes('GARCOM') ? 'GARCOM' : 'ADMIN'
+  return { token, exp: claims.exp, role, name: claims.name || claims.sub || '' }
 }
 
 function load(): Session | null {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return null
-    const stored = JSON.parse(raw) as Session
-    return stored.exp * 1000 > Date.now() ? stored : null
+    const stored = JSON.parse(raw) as Pick<Session, 'token'>
+    const restored = typeof stored.token === 'string' ? fromToken(stored.token) : null
+    return restored && restored.exp * 1000 > Date.now() ? restored : null
   } catch {
     return null
   }
@@ -44,15 +66,15 @@ function scheduleExpiry() {
   timer = setTimeout(() => session.clear(), Math.max(ms, 0))
 }
 
-/** Sessão do proprietário: o JWT fica no localStorage e some sozinho quando expira. */
+/** Sessão (proprietário ou garçom): o JWT fica no localStorage e some sozinho quando expira. */
 export const session = {
   getToken(): string | null {
     return current?.token ?? null
   },
   set(token: string): void {
-    const exp = readExp(token)
-    if (exp === null) throw new Error('Token inválido')
-    current = { token, exp }
+    const parsed = fromToken(token)
+    if (parsed === null) throw new Error('Token inválido')
+    current = parsed
     try {
       localStorage.setItem(KEY, JSON.stringify(current))
     } catch {
@@ -94,4 +116,10 @@ scheduleExpiry()
 
 export function useIsAuthenticated(): boolean {
   return useSyncExternalStore(session.subscribe, session.getSnapshot) !== null
+}
+
+/** Quem está logado (perfil e nome), ou null. */
+export function useSessionUser(): Pick<Session, 'role' | 'name'> | null {
+  const snapshot = useSyncExternalStore(session.subscribe, session.getSnapshot)
+  return snapshot ? { role: snapshot.role, name: snapshot.name } : null
 }

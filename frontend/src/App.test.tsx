@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { http, HttpResponse } from 'msw'
@@ -8,7 +8,7 @@ import { ApiError } from './api/client'
 import { session } from './auth/session'
 import { adminItem, categories, menu, page } from './test/fixtures'
 import { server } from './test/server'
-import { API, signIn } from './test/utils'
+import { API, fakeJwt, signIn } from './test/utils'
 
 function renderAt(route: string) {
   return render(
@@ -96,6 +96,40 @@ describe('área do garçom (em construção)', () => {
     vi.stubEnv('VITE_FEATURE_COMANDAS', '1')
     renderAt('/garcom')
     expect(await screen.findByRole('heading', { name: 'Área do garçom' })).toBeInTheDocument()
+  })
+
+  it('garçom que abre /admin é levado para a área dele', async () => {
+    vi.stubEnv('VITE_FEATURE_COMANDAS', '1')
+    session.set(fakeJwt(3600, { roles: ['GARCOM'], name: 'João' }))
+    server.use(http.get(`${API}/api/pedidos/mesas`, () => HttpResponse.json([])))
+    renderAt('/admin/items')
+    expect(await screen.findByText('Olá, João')).toBeInTheDocument()
+  })
+
+  it('com a chave ligada, o painel ganha "Salão" (mesas e garçons) no lugar de "Cardápio"', async () => {
+    vi.stubEnv('VITE_FEATURE_COMANDAS', '1')
+    signIn()
+    server.use(
+      http.get(`${API}/api/admin/mesas`, () => HttpResponse.json([])),
+      http.get(`${API}/api/admin/garcons`, () => HttpResponse.json([])),
+    )
+    const user = userEvent.setup()
+    renderAt('/admin/items')
+    const nav = await screen.findByRole('navigation', { name: 'Painel' })
+    expect(within(nav).queryByText('Cardápio')).not.toBeInTheDocument()
+    await user.click(within(nav).getByRole('link', { name: 'Salão' }))
+    expect(await screen.findByText(/Nenhuma mesa ainda/)).toBeInTheDocument()
+    await user.click(screen.getByRole('link', { name: 'Garçons' }))
+    expect(await screen.findByText(/Nenhum garçom ainda/)).toBeInTheDocument()
+  })
+
+  it('com a chave desligada, o painel não tem "Salão"', async () => {
+    vi.stubEnv('VITE_FEATURE_COMANDAS', '')
+    signIn()
+    renderAt('/admin/items')
+    const nav = await screen.findByRole('navigation', { name: 'Painel' })
+    expect(within(nav).getByText('Cardápio')).toBeInTheDocument()
+    expect(within(nav).queryByText('Salão')).not.toBeInTheDocument()
   })
 })
 

@@ -1,7 +1,12 @@
 package com.bardomarcelo.menu.api;
 
+import com.bardomarcelo.menu.auth.AppUser;
+import com.bardomarcelo.menu.auth.AppUserRepository;
+import com.bardomarcelo.menu.auth.UserRole;
 import com.bardomarcelo.menu.category.Category;
 import com.bardomarcelo.menu.category.CategoryRepository;
+import com.bardomarcelo.menu.comanda.DiningTable;
+import com.bardomarcelo.menu.comanda.DiningTableRepository;
 import com.bardomarcelo.menu.image.ImageStorageService;
 import com.bardomarcelo.menu.image.StoredImageRepository;
 import com.bardomarcelo.menu.item.MenuItem;
@@ -23,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -45,12 +51,17 @@ public abstract class ApiTestSupport {
     @Autowired protected JwtEncoder jwtEncoder;
     @Autowired protected ImageStorageService images;
     @Autowired protected StoredImageRepository storedImages;
+    @Autowired protected AppUserRepository users;
+    @Autowired protected DiningTableRepository tables;
+    @Autowired protected PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void cleanDatabase() {
         items.deleteAll();
         storedImages.deleteAll();
         categories.deleteAll();
+        tables.deleteAll();
+        users.deleteAll(users.findAllByRoleOrderByDisplayNameAsc(UserRole.GARCOM));
         cacheManager.getCache(MenuService.CACHE).clear();
     }
 
@@ -63,6 +74,23 @@ public abstract class ApiTestSupport {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .subject(subject).issuedAt(issuedAt).expiresAt(expiresAt).claim("roles", roles).build();
         return jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims)).getTokenValue();
+    }
+
+    protected AppUser waiter(String username, String password, String name) {
+        return users.save(AppUser.waiter(username, passwordEncoder.encode(password), name));
+    }
+
+    /** Token como o login emite para um garçom (com o id do usuário). */
+    protected String waiterBearer(AppUser waiter) {
+        Instant exp = Instant.now().plusSeconds(600);
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .subject(waiter.getUsername()).issuedAt(exp.minusSeconds(60)).expiresAt(exp)
+                .claim("roles", List.of("GARCOM")).claim("uid", waiter.getId()).claim("name", waiter.getDisplayName()).build();
+        return "Bearer " + jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims)).getTokenValue();
+    }
+
+    protected DiningTable table(String name, int order) {
+        return tables.save(new DiningTable(name, order));
     }
 
     protected Category category(String name, int order) {

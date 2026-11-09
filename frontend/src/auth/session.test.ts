@@ -73,4 +73,21 @@ describe('session', () => {
     expect(session.consumeExpiredNotice()).toBe(true)
     expect(session.consumeExpiredNotice()).toBe(false)
   })
+
+  it('lê perfil e nome do token (com acentos); sem perfil conta como proprietário', async () => {
+    const session = await freshSession()
+    session.set(fakeJwt(3600, { roles: ['GARCOM'], name: 'João' }))
+    expect(session.getSnapshot()).toMatchObject({ role: 'GARCOM', name: 'João' })
+    session.set(fakeJwt(3600, {}))
+    expect(session.getSnapshot()).toMatchObject({ role: 'ADMIN', name: 'admin' })
+  })
+
+  it('ao recarregar, o perfil vem do token salvo (não de um campo editável)', async () => {
+    const first = await freshSession()
+    first.set(fakeJwt(3600, { roles: ['GARCOM'], name: 'Ana' }))
+    const stored = JSON.parse(localStorage.getItem('bdm.session') as string)
+    localStorage.setItem('bdm.session', JSON.stringify({ ...stored, role: 'ADMIN' }))
+    const second = await freshSession()
+    expect(second.getSnapshot()?.role).toBe('GARCOM')
+  })
 })

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getItem, getMenu, listCategories, searchItems } from './endpoints'
+import { getItem, getMenu, listCategories, listServiceTables, listTables, listWaiters, searchItems } from './endpoints'
 import { readMenuCache, writeMenuCache } from '../lib/menuCache'
 import type { ItemSearch } from './types'
 
@@ -7,6 +7,9 @@ export const keys = {
   menu: ['menu'] as const,
   items: ['admin', 'items'] as const,
   categories: ['admin', 'categories'] as const,
+  tables: ['admin', 'tables'] as const,
+  waiters: ['admin', 'waiters'] as const,
+  serviceTables: ['service', 'tables'] as const,
 }
 
 /**
@@ -40,3 +43,9 @@ export const useAdminItem = (id: number | undefined) =>
   useQuery({ queryKey: [...keys.items, 'one', id], queryFn: () => getItem(id as number), enabled: id !== undefined })
 
 export const useCategories = () => useQuery({ queryKey: keys.categories, queryFn: listCategories })
+
+export const useTables = () => useQuery({ queryKey: keys.tables, queryFn: listTables })
+export const useWaiters = () => useQuery({ queryKey: keys.waiters, queryFn: listWaiters })
+/** Mesas do garçom: atualiza sozinha (outro garçom pode abrir comanda a qualquer momento). */
+export const useServiceTables = () =>
+  useQuery({ queryKey: keys.serviceTables, queryFn: listServiceTables, refetchInterval: 10_000, refetchOnWindowFocus: true })

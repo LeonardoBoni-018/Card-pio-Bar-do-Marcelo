@@ -5,6 +5,7 @@ import { session } from '../../auth/session'
 import { LogoName } from '../../components/Logo'
 import { Icon } from '../../components/ui/Icon'
 import { TopProgress } from '../../components/ui/TopProgress'
+import { comandasEnabled } from '../../lib/features'
 import { useKeepAlive } from '../../lib/useKeepAlive'
 
 /**
@@ -67,16 +68,20 @@ export function AdminLayout() {
         <NavLink to="/admin/categories" className={({ isActive }) => itemClass(isActive)}>
           {({ isActive }) => <NavItemContent active={isActive} label="Categorias" icon={<Icon name="tags" className="size-6" />} />}
         </NavLink>
+        {/* com as comandas ligadas, "Salão" entra no lugar de "Cardápio" (que continua em Divulgar → Abrir cardápio) */}
+        {comandasEnabled() && (
+          <NavLink to="/admin/salao" className={({ isActive }) => itemClass(isActive)}>
+            {({ isActive }) => <NavItemContent active={isActive} label="Salão" icon={<Icon name="store" className="size-6" />} />}
+          </NavLink>
+        )}
         <NavLink to="/admin/share" className={({ isActive }) => itemClass(isActive)}>
           {({ isActive }) => <NavItemContent active={isActive} label="Divulgar" icon={<Icon name="qr" className="size-6" />} />}
         </NavLink>
-        <a href="/" target="_blank" rel="noreferrer" className={itemClass(false)}>
-          <NavItemContent
-            active={false}
-            label="Cardápio"
-            icon={<Icon name="eye" className="size-6" />}
-          />
-        </a>
+        {!comandasEnabled() && (
+          <a href="/" target="_blank" rel="noreferrer" className={itemClass(false)}>
+            <NavItemContent active={false} label="Cardápio" icon={<Icon name="eye" className="size-6" />} />
+          </a>
+        )}
         <button type="button" onClick={logout} className={`${itemClass(false)} md:mt-4`}>
           <NavItemContent
             active={false}

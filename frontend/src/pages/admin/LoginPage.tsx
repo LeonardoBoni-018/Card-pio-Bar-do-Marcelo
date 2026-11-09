@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { z } from 'zod'
 import { login } from '../../api/endpoints'
-import { session, useIsAuthenticated } from '../../auth/session'
+import { session, useSessionUser, type Role } from '../../auth/session'
 import { LogoFull } from '../../components/Logo'
 import { retryOnlyWhileWaking } from '../../lib/wake'
 import { useSlow } from '../../lib/useSlow'
@@ -18,13 +18,25 @@ const schema = z.object({
 })
 type Values = z.infer<typeof schema>
 
-export default function LoginPage() {
+const VARIANTS = {
+  admin: { title: 'Área do proprietário', subtitle: 'Entre para editar o cardápio.', home: '/admin/items' },
+  garcom: { title: 'Área do garçom', subtitle: 'Entre para lançar os pedidos das mesas.', home: '/garcom' },
+}
+
+/** Garçom sempre vai para a área dele; o proprietário volta para onde estava (ou para a área desta tela). */
+function destination(role: Role, variant: keyof typeof VARIANTS, from: string | undefined): string {
+  if (role === 'GARCOM') return from?.startsWith('/garcom') ? from : '/garcom'
+  return from ?? VARIANTS[variant].home
+}
+
+export default function LoginPage({ variant = 'admin' }: { variant?: keyof typeof VARIANTS }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const authenticated = useIsAuthenticated()
+  const user = useSessionUser()
   const [expired] = useState(() => session.consumeExpiredNotice())
   const [showPassword, setShowPassword] = useState(false)
-  const from = (location.state as { from?: string } | null)?.from ?? '/admin/items'
+  const from = (location.state as { from?: string } | null)?.from
+  const texts = VARIANTS[variant]
 
   const {
     register,
@@ -38,21 +50,21 @@ export default function LoginPage() {
     retry: retryOnlyWhileWaking,
     onSuccess: (data) => {
       session.set(data.accessToken)
-      navigate(from, { replace: true })
+      navigate(destination(session.getSnapshot()?.role ?? 'ADMIN', variant, from), { replace: true })
     },
   })
 
   const slow = useSlow(mutation.isPending, 5000)
 
-  if (authenticated) return <Navigate to={from} replace />
+  if (user) return <Navigate to={destination(user.role, variant, from)} replace />
 
   return (
     <div className="min-h-dvh bg-brasa-600 px-4 py-6 sm:grid sm:place-items-center">
       <main className="mx-auto w-full max-w-sm animate-fade-up overflow-hidden rounded-3xl bg-white p-6 shadow-xl sm:p-8">
         <div className="awning -mx-6 -mt-6 mb-5 h-3 sm:-mx-8 sm:-mt-8" aria-hidden="true" />
         <LogoFull className="mx-auto h-auto w-56" />
-        <h1 className="mt-4 text-center text-2xl font-extrabold">Área do proprietário</h1>
-        <p className="mt-1 text-center text-tinta-500">Entre para editar o cardápio.</p>
+        <h1 className="mt-4 text-center text-2xl font-extrabold">{texts.title}</h1>
+        <p className="mt-1 text-center text-tinta-500">{texts.subtitle}</p>
 
         {expired && !mutation.isError && (
           <p role="status" className="mt-4 rounded-lg bg-sol-100 ring-1 ring-sol-500 px-3 py-2 text-sm font-semibold text-tinta-900">

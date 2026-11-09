@@ -70,3 +70,33 @@ export interface ItemSearch {
   page?: number
   size?: number
 }
+
+/** Mesa do salão (comandas). */
+export interface DiningTable {
+  id: number
+  name: string
+  displayOrder: number
+  active: boolean
+}
+
+export interface TableInput {
+  name: string
+  displayOrder?: number
+  active?: boolean
+}
+
+/** Garçom cadastrado pelo proprietário (a senha nunca volta da API). */
+export interface Waiter {
+  id: number
+  name: string
+  username: string
+  active: boolean
+}
+
+export interface WaiterInput {
+  name: string
+  username: string
+  /** Obrigatória ao criar; vazia ao editar = mantém a atual. */
+  password?: string
+  active?: boolean
+}

@@ -15,11 +15,11 @@ class AdminUserInitializer implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(AdminUserInitializer.class);
 
-    private final AdminUserRepository users;
+    private final AppUserRepository users;
     private final PasswordEncoder encoder;
     private final AppProperties props;
 
-    AdminUserInitializer(AdminUserRepository users, PasswordEncoder encoder, AppProperties props) {
+    AdminUserInitializer(AppUserRepository users, PasswordEncoder encoder, AppProperties props) {
         this.users = users;
         this.encoder = encoder;
         this.props = props;
@@ -31,12 +31,13 @@ class AdminUserInitializer implements ApplicationRunner {
         String username = props.admin().username();
         String password = props.admin().password();
         users.findByUsername(username).ifPresentOrElse(user -> {
+            user.makeActiveAdmin();
             if (!encoder.matches(password, user.getPasswordHash())) {
                 user.setPasswordHash(encoder.encode(password));
                 log.info("Senha do usuário '{}' atualizada a partir da configuração", username);
             }
         }, () -> {
-            users.save(new AdminUser(username, encoder.encode(password)));
+            users.save(AppUser.admin(username, encoder.encode(password)));
             log.info("Usuário proprietário '{}' criado", username);
         });
     }

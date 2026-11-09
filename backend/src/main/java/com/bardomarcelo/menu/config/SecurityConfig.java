@@ -22,6 +22,8 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import com.bardomarcelo.menu.auth.ActiveWaiterAuthenticationConverter;
+import com.bardomarcelo.menu.auth.AppUserRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.header.writers.DelegatingRequestMatcherHeaderWriter;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
@@ -35,10 +37,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     public static final String ROLE_ADMIN = "ADMIN";
-    static final String ROLES_CLAIM = "roles";
+    public static final String ROLE_GARCOM = "GARCOM";
+    public static final String ROLES_CLAIM = "roles";
+    public static final String USER_ID_CLAIM = "uid";
+    public static final String NAME_CLAIM = "name";
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, AppUserRepository users) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable) // API stateless com Bearer token, sem cookies
                 .cors(Customizer.withDefaults())
@@ -48,8 +53,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers("/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/admin/**").hasRole(ROLE_ADMIN)
+                        .requestMatchers("/api/pedidos/**").hasAnyRole(ROLE_ADMIN, ROLE_GARCOM)
                         .anyRequest().denyAll())
-                .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(jwtAuthenticationConverter())))
+                .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(new ActiveWaiterAuthenticationConverter(jwtAuthenticationConverter(), users))))
                 .headers(h -> h
                         .referrerPolicy(r -> r.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
                         .addHeaderWriter(new DelegatingRequestMatcherHeaderWriter(

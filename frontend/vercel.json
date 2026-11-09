@@ -4,6 +4,11 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
+    {
+      "source": "/api/:path*",
+      "has": [{ "type": "host", "value": "bardomarcelo-teste.vercel.app" }],
+      "destination": "https://bar-do-marcelo-api-teste.onrender.com/api/:path*"
+    },
     { "source": "/api/:path((?!fast/).*)", "destination": "https://bar-do-marcelo-api.onrender.com/api/:path*" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
