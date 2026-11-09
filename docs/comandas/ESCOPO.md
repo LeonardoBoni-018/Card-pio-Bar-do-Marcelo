@@ -35,7 +35,7 @@ Regras:
 | Forma de pagamento | **Não registra** |
 | Item avulso | **Sim**: o garçom digita nome, preço e quantidade |
 | Itens indisponíveis | Aparecem em cinza com "Indisponível", **sem poder selecionar**; a API também recusa |
-| Fechar e remover itens | Padrão adotado até o cliente dizer o contrário: qualquer garçom lança, edita, remove e fecha; só o dono reabre ou cancela uma comanda fechada |
+| Fechar e remover itens | **Confirmado pelo cliente:** qualquer garçom lança, edita, remove itens e fecha a conta; só o dono reabre ou cancela uma comanda já fechada |
 | Auditoria | Toda ação guarda quem fez e quando |
 
 ## 3. Modelo de dados (migration V10)
