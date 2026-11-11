@@ -54,9 +54,13 @@ public abstract class ApiTestSupport {
     @Autowired protected AppUserRepository users;
     @Autowired protected DiningTableRepository tables;
     @Autowired protected PasswordEncoder passwordEncoder;
+    @Autowired protected org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     @BeforeEach
     void cleanDatabase() {
+        jdbc.update("DELETE FROM comanda_item");
+        jdbc.update("UPDATE comanda SET merged_into = NULL");
+        jdbc.update("DELETE FROM comanda");
         items.deleteAll();
         storedImages.deleteAll();
         categories.deleteAll();

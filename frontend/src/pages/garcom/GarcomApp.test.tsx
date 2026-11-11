@@ -17,8 +17,15 @@ const render = (route = '/garcom') =>
   )
 
 const tables = [
-  { id: 1, name: 'Mesa 1', displayOrder: 1, active: true },
-  { id: 2, name: 'Balcão', displayOrder: 2, active: true },
+  {
+    id: 1,
+    name: 'Mesa 1',
+    displayOrder: 1,
+    active: true,
+    openTotal: 42.5,
+    comandas: [{ id: 9, label: 'João', total: 42.5, itemCount: 3, openedBy: 'Ana', openedAt: '2026-11-11T20:00:00Z', version: 3 }],
+  },
+  { id: 2, name: 'Balcão', displayOrder: 2, active: true, openTotal: 0, comandas: [] },
 ]
 
 describe('Área do garçom', () => {
@@ -36,6 +43,9 @@ describe('Área do garçom', () => {
     render()
     expect(await screen.findByText('Olá, João')).toBeInTheDocument()
     expect(await screen.findByText('Balcão')).toBeInTheDocument()
+    expect(screen.getByText('1 comanda')).toBeInTheDocument()
+    expect(screen.getByText(/R\$\s?42,50/)).toBeInTheDocument()
+    expect(screen.getByText('Livre')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Painel' })).not.toBeInTheDocument()
   })
 

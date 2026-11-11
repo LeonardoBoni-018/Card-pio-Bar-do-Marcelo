@@ -100,3 +100,20 @@ export interface WaiterInput {
   password?: string
   active?: boolean
 }
+
+/** Resumo de comanda aberta (cartões da tela de mesas do garçom). */
+export interface ComandaSummary {
+  id: number
+  label: string | null
+  total: number
+  itemCount: number
+  openedBy: string
+  openedAt: string
+  version: number
+}
+
+/** Mesa vista pelo garçom, com as comandas abertas. */
+export interface TableOverview extends DiningTable {
+  openTotal: number
+  comandas: ComandaSummary[]
+}

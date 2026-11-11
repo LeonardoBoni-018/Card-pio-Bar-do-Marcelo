@@ -1,5 +1,5 @@
 import { fastReadsEnabled, request } from './client'
-import type { AdminItem, Category, DiningTable, ItemInput, ItemSearch, MenuCategory, Page, TableInput, TokenResponse, Waiter, WaiterInput } from './types'
+import type { AdminItem, Category, DiningTable, ItemInput, ItemSearch, MenuCategory, Page, TableInput, TableOverview, TokenResponse, Waiter, WaiterInput } from './types'
 
 /**
  * Cardápio público. Com as leituras rápidas ligadas, tenta primeiro a função da Vercel (não dorme) e, se falhar
@@ -75,4 +75,4 @@ export const createWaiter = (input: WaiterInput) => request<Waiter>('/api/admin/
 export const updateWaiter = (id: number, input: WaiterInput) => request<Waiter>(`/api/admin/garcons/${id}`, { method: 'PUT', json: input, auth: true })
 
 /** Mesas ativas, para o garçom. */
-export const listServiceTables = () => request<DiningTable[]>('/api/pedidos/mesas', { auth: true })
+export const listServiceTables = () => request<TableOverview[]>('/api/pedidos/mesas', { auth: true })

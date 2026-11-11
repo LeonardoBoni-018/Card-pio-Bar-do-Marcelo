@@ -14,9 +14,11 @@ public class DiningTableService {
     static final String DEFAULT_PREFIX = "Mesa";
 
     private final DiningTableRepository tables;
+    private final ComandaRepository comandas;
 
-    public DiningTableService(DiningTableRepository tables) {
+    public DiningTableService(DiningTableRepository tables, ComandaRepository comandas) {
         this.tables = tables;
+        this.comandas = comandas;
     }
 
     @Transactional(readOnly = true)
@@ -69,8 +71,11 @@ public class DiningTableService {
 
     @Transactional
     public void delete(Long id) {
-        // na etapa 2: recusar (409) quando a mesa tiver comandas; com histórico, o caminho é desativar
-        tables.delete(find(id));
+        DiningTable table = find(id);
+        if (comandas.existsByTableId(id)) {
+            throw new ConflictException("Esta mesa já teve comandas e fica no histórico. Desative em vez de excluir.");
+        }
+        tables.delete(table);
     }
 
     private DiningTable find(Long id) {

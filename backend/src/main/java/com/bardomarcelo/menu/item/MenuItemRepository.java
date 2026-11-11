@@ -19,6 +19,13 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, Long>, JpaSp
             """)
     List<MenuItem> findAvailableForMenu();
 
+    /** Cardápio inteiro, inclusive indisponíveis (área do garçom mostra em cinza). */
+    @Query("""
+            select i from MenuItem i join fetch i.category c
+            order by c.displayOrder, c.name, i.name
+            """)
+    List<MenuItem> findAllForService();
+
     boolean existsByCategoryId(Long categoryId);
 
     @Override

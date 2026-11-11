@@ -55,28 +55,30 @@ V10 (etapa 1, feita):
 | `admin_user` (entidade `AppUser`) | + `display_name`, `role` (`ADMIN`, `GARCOM`), `active`. O login atual vira ADMIN |
 | `dining_table` (entidade `DiningTable`) | `id`, `name` (único), `display_order`, `active` |
 
-Próximas (etapa 2):
+V11 (etapa 2, feita):
 
 | Tabela | Campos principais |
 |---|---|
-| `comanda` | `id`, `mesa_id`, `identificacao`, `status` (`ABERTA`, `FECHADA`, `CANCELADA`), `pessoas`, `desconto`, `total`, `aberta_por/em`, `fechada_por/em`, `cancelada_por/em`, `version` |
-| `comanda_item` | `id`, `comanda_id`, `menu_item_id` (nulo = avulso), `nome` e `preco_unitario` **copiados**, `unidade` (`UNIT`, `KG`), `quantidade NUMERIC(10,3)`, `observacao`, `lancado_por/em` |
+| `comanda` | `id`, `table_id`, `label`, `status` (`OPEN`, `CLOSED`, `CANCELED`, `MERGED`), `people`, `discount`, `total` (gravado ao fechar), `merged_into`, `opened_by/at`, `closed_by/at`, `updated_at`, `version` |
+| `comanda_item` | `id`, `comanda_id`, `menu_item_id` (nulo = avulso ou produto excluído depois), `name` e `unit_price` **copiados**, `price_unit` (`UNIT`, `KG`), `quantity NUMERIC(10,3)`, `note`, `custom`, `added_by/at` |
+
+- Mesa que já teve comanda não pode ser excluída (409), só desativada.
+- Toda alteração trava a linha da comanda (`SELECT … FOR UPDATE`): dois celulares ao mesmo tempo entram em fila, sem perder lançamento. A `version` sobe a cada mudança e serve para o celular saber que precisa atualizar.
 
 - Valores em `NUMERIC` e `BigDecimal`, arredondados aos centavos (HALF_UP) **no servidor**.
-- Edição simultânea: travamento otimista (`@Version`). Quem salvar por último numa versão velha recebe 409 e recarrega a comanda.
 - Itens com preço por kg: a quantidade aceita 3 casas decimais (ex.: 0,350 kg).
 
 ## 4. API planejada
 
 | Quem | Rota | Função |
 |---|---|---|
-| Garçom/dono | `GET /api/pedidos/mesas` | mesas ativas (feito); na etapa 2, com as comandas abertas, total e tempo |
-| Garçom/dono | `POST /api/pedidos/comandas` | abrir comanda (mesa, identificação, pessoas) |
-| Garçom/dono | `GET /api/pedidos/comandas/{id}` | detalhe com itens e total |
-| Garçom/dono | `POST/PATCH/DELETE /api/pedidos/comandas/{id}/itens[/{itemId}]` | lançar, alterar ou remover item (do cardápio ou avulso) |
-| Garçom/dono | `POST /api/pedidos/comandas/{id}/mover` · `/juntar` | trocar de mesa · juntar duas comandas |
+| Garçom/dono | `GET /api/pedidos/mesas` | mesas ativas com as comandas abertas, total e quem abriu (feito) |
+| Garçom/dono | `POST /api/pedidos/comandas` · `PATCH /{id}` | abrir comanda (mesa, identificação, pessoas) · editar identificação/pessoas (feito) |
+| Garçom/dono | `GET /api/pedidos/comandas/{id}` | detalhe com itens e total (feito) |
+| Garçom/dono | `POST/PATCH/DELETE /api/pedidos/comandas/{id}/itens[/{itemId}]` | lançar, alterar ou remover item (do cardápio ou avulso) (feito) |
+| Garçom/dono | `POST /api/pedidos/comandas/{id}/mover` · `/juntar` | trocar de mesa · juntar duas comandas (feito) |
 | Garçom/dono | `POST /api/pedidos/comandas/{id}/fechar` | fechar (desconto e divisão por pessoas só informativa) |
-| Garçom/dono | `GET /api/pedidos/cardapio` | produtos para lançar, com o estado de disponibilidade |
+| Garçom/dono | `GET /api/pedidos/cardapio` | produtos para lançar, com o estado de disponibilidade (feito) |
 | Dono | `/api/admin/garcons` (GET, POST, PUT) · `/api/admin/mesas` (GET, POST, `POST /lote`, PUT, DELETE) | cadastros (feito) |
 | Dono | `POST /api/admin/comandas/{id}/reabrir` · `/cancelar` | correções |
 | Dono | `GET /api/admin/relatorios?de&ate` · `.csv` | total, nº de comandas, ticket médio, por garçom/dia/mesa, mais vendidos, avulsos |
@@ -98,7 +100,7 @@ O "dia" dos relatórios usa o fuso America/Sao_Paulo e vira às 05:00, para a ma
 
 - [x] 0. Estrutura: branch, banco isolado, chaves de funcionalidade, este documento
 - [x] 1. Perfis (ADMIN/GARCOM) no login e no token, cadastro de garçons, cadastro de mesas (migration V10), ambiente de testes
-- [ ] 2. API de comandas: abrir, lançar (cardápio e avulso), editar, remover, mover, juntar; testes de cálculo (kg, desconto, arredondamento) e de concorrência
+- [x] 2. API de comandas: abrir, lançar (cardápio e avulso), editar, remover, mover, juntar; testes de cálculo (kg, desconto, arredondamento) e de concorrência
 - [ ] 3. Tela do garçom: mesas, comandas, lançamento
 - [ ] 4. Fechamento e divisão por pessoas; reabrir e cancelar pelo dono
 - [ ] 5. Relatórios e exportação CSV
