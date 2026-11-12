@@ -26,6 +26,21 @@ public interface ComandaRepository extends JpaRepository<Comanda, Long> {
 
     boolean existsByTableId(Long tableId);
 
+    /** Relatórios: contas fechadas no período (pela hora do fechamento), com itens e pessoas. */
+    @Query("""
+            select distinct c from Comanda c
+            join fetch c.table join fetch c.closedBy left join fetch c.items i left join fetch i.addedBy
+            where c.status = com.bardomarcelo.menu.comanda.ComandaStatus.CLOSED and c.closedAt >= :from and c.closedAt < :to
+            """)
+    List<Comanda> findClosedBetween(java.time.Instant from, java.time.Instant to);
+
+    /** Relatórios: canceladas no período (pela hora do cancelamento). */
+    @Query("""
+            select distinct c from Comanda c left join fetch c.items
+            where c.status = com.bardomarcelo.menu.comanda.ComandaStatus.CANCELED and c.canceledAt >= :from and c.canceledAt < :to
+            """)
+    List<Comanda> findCanceledBetween(java.time.Instant from, java.time.Instant to);
+
     /** Lista do proprietário: por situação e período de abertura, mais recentes primeiro. */
     @Query("""
             select distinct c from Comanda c

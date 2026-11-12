@@ -81,7 +81,7 @@ V11 (etapa 2, feita):
 | Garçom/dono | `GET /api/pedidos/cardapio` | produtos para lançar, com o estado de disponibilidade (feito) |
 | Dono | `/api/admin/garcons` (GET, POST, PUT) · `/api/admin/mesas` (GET, POST, `POST /lote`, PUT, DELETE) | cadastros (feito) |
 | Dono | `GET /api/admin/comandas?status&de&ate` · `POST /{id}/reabrir` · `/cancelar` | lista do dia (vira às 05:00) · reabrir conta fechada · cancelar com motivo (feito; V12) |
-| Dono | `GET /api/admin/relatorios?de&ate` · `.csv` | total, nº de comandas, ticket médio, por garçom/dia/mesa, mais vendidos, avulsos |
+| Dono | `GET /api/admin/relatorios?de&ate` · `/planilha` | total, descontos, nº de contas, ticket médio, canceladas, por dia/garçom (quem fechou)/mesa, mais vendidos, avulsos · planilha CSV (;, vírgula decimal, abre no Excel) (feito) |
 
 O "dia" dos relatórios usa o fuso America/Sao_Paulo e vira às 05:00, para a madrugada contar no dia anterior.
 
@@ -103,7 +103,7 @@ O "dia" dos relatórios usa o fuso America/Sao_Paulo e vira às 05:00, para a ma
 - [x] 2. API de comandas: abrir, lançar (cardápio e avulso), editar, remover, mover, juntar; testes de cálculo (kg, desconto, arredondamento) e de concorrência
 - [x] 3. Tela do garçom: mesas, comandas, lançamento
 - [x] 4. Fechamento e divisão por pessoas; reabrir e cancelar pelo dono
-- [ ] 5. Relatórios e exportação CSV
+- [x] 5. Relatórios e exportação CSV
 - [ ] 6. Testes E2E do fluxo completo e nos 17 tamanhos de tela; validação com o cliente no banco `dev-comandas`
 - [ ] 7. Lançamento (ver abaixo)
 

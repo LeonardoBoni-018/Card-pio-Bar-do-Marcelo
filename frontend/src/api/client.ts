@@ -21,6 +21,8 @@ interface RequestOptions {
   /** Envia o token do proprietário e trata 401 como sessão expirada. */
   auth?: boolean
   signal?: AbortSignal
+  /** Devolve o corpo como arquivo (Blob), ex.: planilha. */
+  blob?: boolean
 }
 
 const FRIENDLY: Record<number, string> = {
@@ -54,6 +56,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   }
 
   if (response.ok) {
+    if (options.blob) return (await response.blob()) as T
     return (response.status === 204 ? undefined : await response.json()) as T
   }
 

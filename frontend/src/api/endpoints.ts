@@ -1,5 +1,5 @@
 import { fastReadsEnabled, request } from './client'
-import type { AddItemInput, AdminItem, Comanda, ComandaListItem, ComandaStatus, ServiceMenuCategory, Category, DiningTable, ItemInput, ItemSearch, MenuCategory, Page, TableInput, TableOverview, TokenResponse, Waiter, WaiterInput } from './types'
+import type { SalesReport, AddItemInput, AdminItem, Comanda, ComandaListItem, ComandaStatus, ServiceMenuCategory, Category, DiningTable, ItemInput, ItemSearch, MenuCategory, Page, TableInput, TableOverview, TokenResponse, Waiter, WaiterInput } from './types'
 
 /**
  * Cardápio público. Com as leituras rápidas ligadas, tenta primeiro a função da Vercel (não dorme) e, se falhar
@@ -103,3 +103,6 @@ export function listAdminComandas(params: { status?: ComandaStatus[]; de?: strin
 }
 export const reopenComanda = (id: number) => request<Comanda>(`/api/admin/comandas/${id}/reabrir`, { method: 'POST', auth: true })
 export const cancelComanda = (id: number, reason?: string) => request<Comanda>(`/api/admin/comandas/${id}/cancelar`, { method: 'POST', json: { reason }, auth: true })
+
+export const getSalesReport = (de: string, ate: string) => request<SalesReport>(`/api/admin/relatorios?de=${de}&ate=${ate}`, { auth: true })
+export const downloadSalesSheet = (de: string, ate: string) => request<Blob>(`/api/admin/relatorios/planilha?de=${de}&ate=${ate}`, { auth: true, blob: true })

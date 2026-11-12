@@ -6,14 +6,15 @@ const TABS: { to: string; label: string; icon: IconName }[] = [
   { to: 'mesas', label: 'Mesas', icon: 'store' },
   { to: 'garcons', label: 'Garçons', icon: 'user' },
   { to: 'comandas', label: 'Comandas', icon: 'list' },
+  { to: 'relatorios', label: 'Relatórios', icon: 'money' },
 ]
 
 /** Salão: cadastros do módulo de comandas, em abas (Mesas, Garçons; depois Comandas e Relatórios). */
 export function SalaoLayout() {
   return (
     <div className="mx-auto max-w-4xl space-y-5">
-      <PageHeader icon="store" title="Salão" subtitle="Mesas, garçons e as comandas do dia." />
-      <nav aria-label="Salão" className="flex gap-1 rounded-2xl bg-white p-1 shadow-sm ring-1 ring-brasa-100">
+      <PageHeader icon="store" title="Salão" subtitle="Mesas, garçons, comandas e relatórios de vendas." />
+      <nav aria-label="Salão" className="grid grid-cols-2 gap-1 rounded-2xl bg-white p-1 shadow-sm ring-1 ring-brasa-100 sm:grid-cols-4">
         {TABS.map((tab) => (
           <NavLink
             key={tab.to}

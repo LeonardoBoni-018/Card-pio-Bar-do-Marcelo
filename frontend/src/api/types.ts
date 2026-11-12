@@ -195,3 +195,34 @@ export interface AddItemInput {
   quantity: number
   note?: string
 }
+
+export interface ReportGroup {
+  name: string
+  count: number
+  total: number
+}
+
+export interface ReportItem {
+  name: string
+  priceUnit: PriceUnit
+  quantity: number
+  total: number
+}
+
+/** Relatório de vendas (só contas fechadas) no período. */
+export interface SalesReport {
+  from: string
+  to: string
+  closedCount: number
+  gross: number
+  discounts: number
+  total: number
+  averageTicket: number
+  canceledCount: number
+  canceledValue: number
+  byDay: { date: string; count: number; total: number }[]
+  byWaiter: ReportGroup[]
+  byTable: ReportGroup[]
+  topItems: ReportItem[]
+  customItems: ReportItem[]
+}
