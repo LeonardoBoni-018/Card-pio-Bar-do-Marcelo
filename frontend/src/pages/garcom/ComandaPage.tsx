@@ -245,13 +245,13 @@ export default function ComandaPage() {
       ) : (
         <ul aria-label="Itens da comanda" className="divide-y divide-brasa-100 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-brasa-100">
           {c.items.map((item) => (
-            <li key={item.id} className="flex items-center gap-2 p-3">
+            <li key={item.id} className="flex flex-wrap items-center gap-x-2 gap-y-1 p-3">
               <button
                 type="button"
                 disabled={!open}
                 onClick={() => setPanel({ item })}
                 aria-label={`Editar ${item.name}`}
-                className="press min-w-0 flex-1 rounded-lg text-left disabled:cursor-default"
+                className="press min-w-0 basis-full rounded-lg text-left disabled:cursor-default min-[400px]:basis-0 min-[400px]:flex-1"
               >
                 <span className="block font-extrabold leading-tight">
                   {item.name}
@@ -264,7 +264,7 @@ export default function ComandaPage() {
                 </span>
               </button>
               {open && item.priceUnit === 'UNIT' && (
-                <div className="flex shrink-0 items-center gap-1" role="group" aria-label={`Quantidade de ${item.name}`}>
+                <div className="mr-auto flex shrink-0 items-center gap-1 min-[400px]:mr-0" role="group" aria-label={`Quantidade de ${item.name}`}>
                   <button
                     type="button"
                     disabled={step.isPending}
@@ -288,7 +288,7 @@ export default function ComandaPage() {
                   </button>
                 </div>
               )}
-              <span className="w-20 shrink-0 text-right font-extrabold">{formatBRL(item.lineTotal)}</span>
+              <span className="ml-auto w-20 shrink-0 text-right font-extrabold min-[400px]:ml-0">{formatBRL(item.lineTotal)}</span>
             </li>
           ))}
         </ul>
