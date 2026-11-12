@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { mergeComanda, moveComanda, removeComandaItem, updateComanda, updateComandaItem } from '../../api/endpoints'
+import { closeComanda, discardComanda, mergeComanda, moveComanda, removeComandaItem, updateComanda, updateComandaItem } from '../../api/endpoints'
 import { useComanda, useServiceTables } from '../../api/queries'
 import type { Comanda, ComandaItem } from '../../api/types'
 import { ErrorState } from '../../components/ErrorState'
@@ -10,14 +10,14 @@ import { Icon } from '../../components/ui/Icon'
 import { cardClass } from '../../components/ui/Layout'
 import { Sheet } from '../../components/ui/Sheet'
 import { Spinner } from '../../components/ui/Spinner'
-import { formatBRL, formatQuantity, parseWeightKg } from '../../lib/format'
+import { formatBRL, formatQuantity, parsePrice, parseWeightKg } from '../../lib/format'
 import { AddItemSheet } from './AddItemSheet'
 import { useComandaAction } from './useComandaAction'
 
-type Panel = null | 'add' | 'edit' | 'move' | 'merge' | { item: ComandaItem }
+type Panel = null | 'add' | 'edit' | 'move' | 'merge' | 'close' | { item: ComandaItem }
 
 const STATUS_TEXT: Record<Exclude<Comanda['status'], 'OPEN'>, string> = {
-  CLOSED: 'Esta comanda já foi fechada.',
+  CLOSED: 'Conta fechada.',
   CANCELED: 'Esta comanda foi cancelada.',
   MERGED: 'Esta comanda foi juntada em outra.',
 }
@@ -169,12 +169,89 @@ function MergeSheet({ comanda, onClose }: { comanda: Comanda; onClose: () => voi
   )
 }
 
+/** Fechar a conta: resumo, desconto opcional e divisão por pessoas (só informativa). Sem nota fiscal. */
+function CloseSheet({ comanda, onClose }: { comanda: Comanda; onClose: () => void }) {
+  const [discountText, setDiscountText] = useState('')
+  const [people, setPeople] = useState(comanda.people ? String(comanda.people) : '1')
+  const discount = discountText.trim() === '' ? 0 : parsePrice(discountText)
+  const peopleN = Number(people)
+  const peopleOk = Number.isInteger(peopleN) && peopleN >= 1 && peopleN <= 99
+  const discountOk = discount !== null && discount <= comanda.subtotal
+  const total = discountOk ? Math.max(Math.round((comanda.subtotal - (discount as number)) * 100) / 100, 0) : comanda.subtotal
+  const perPerson = peopleOk ? Math.ceil((total / peopleN) * 100) / 100 : null
+  const close = useComandaAction(
+    comanda.id,
+    () => closeComanda(comanda.id, discount as number, peopleN),
+    (c) => `Conta fechada: ${formatBRL(c.total)}.`,
+  )
+
+  return (
+    <Sheet
+      open
+      title="Fechar conta"
+      onClose={onClose}
+      footer={
+        <Button className="w-full" disabled={!discountOk || !peopleOk} loading={close.isPending} onClick={() => close.mutate(undefined, { onSuccess: onClose })}>
+          Confirmar fechamento · {formatBRL(total)}
+        </Button>
+      }
+    >
+      <dl className="space-y-1 text-lg">
+        <div className="flex justify-between">
+          <dt className="text-tinta-700">
+            Subtotal ({comanda.items.length} {comanda.items.length === 1 ? 'item' : 'itens'})
+          </dt>
+          <dd className="font-bold">{formatBRL(comanda.subtotal)}</dd>
+        </div>
+        {discountOk && (discount as number) > 0 && (
+          <div className="flex justify-between text-brasa-700">
+            <dt>Desconto</dt>
+            <dd className="font-bold">− {formatBRL(discount as number)}</dd>
+          </div>
+        )}
+        <div className="flex justify-between border-t border-brasa-100 pt-2 text-2xl">
+          <dt className="font-extrabold">Total</dt>
+          <dd className="font-extrabold" data-testid="fechar-total">
+            {formatBRL(total)}
+          </dd>
+        </div>
+        {perPerson !== null && peopleN > 1 && (
+          <div className="flex justify-between text-base text-tinta-700">
+            <dt>Por pessoa ({peopleN})</dt>
+            <dd className="font-bold" data-testid="por-pessoa">
+              {formatBRL(perPerson)}
+            </dd>
+          </div>
+        )}
+      </dl>
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <Field
+          id="fechar-desconto"
+          label="Desconto (R$)"
+          error={discountText && discount === null ? 'Valor inválido.' : discount !== null && !discountOk ? 'Maior que a conta.' : undefined}
+        >
+          <input id="fechar-desconto" inputMode="decimal" value={discountText} onChange={(e) => setDiscountText(e.target.value)} placeholder="0,00" className={inputClass} />
+        </Field>
+        <Field id="fechar-pessoas" label="Dividir por" error={!peopleOk ? 'De 1 a 99.' : undefined}>
+          <input id="fechar-pessoas" type="number" inputMode="numeric" min={1} max={99} value={people} onChange={(e) => setPeople(e.target.value)} className={inputClass} />
+        </Field>
+      </div>
+      <p className="mt-3 text-sm text-tinta-500">Depois de fechada, só o proprietário pode reabrir. Não é documento fiscal.</p>
+    </Sheet>
+  )
+}
+
 /** Comanda no celular: itens, +/−, total fixo embaixo e ações (lançar, editar, mover, juntar). */
 export default function ComandaPage() {
   const id = Number(useParams().id)
   const comanda = useComanda(id)
   const navigate = useNavigate()
   const [panel, setPanel] = useState<Panel>(null)
+  const discard = useComandaAction(
+    id,
+    () => discardComanda(id),
+    () => 'Comanda descartada.',
+  )
   const step = useComandaAction(id, ({ item, quantity }: { item: ComandaItem; quantity: number }) =>
     quantity < 1 ? removeComandaItem(id, item.id) : updateComandaItem(id, item.id, quantity, item.note),
   )
@@ -206,7 +283,8 @@ export default function ComandaPage() {
 
       {!open && (
         <div role="status" className="rounded-xl bg-sol-100 px-3 py-2 font-semibold text-tinta-900 ring-1 ring-sol-500">
-          {STATUS_TEXT[c.status as Exclude<Comanda['status'], 'OPEN'>]}{' '}
+          {STATUS_TEXT[c.status as Exclude<Comanda['status'], 'OPEN'>]} {c.status === 'CLOSED' && c.closedBy && `Fechada por ${c.closedBy}. `}
+          {c.status === 'CANCELED' && c.cancelReason && `Motivo: ${c.cancelReason}. `}
           {c.status === 'MERGED' && c.mergedInto && (
             <button type="button" className="font-extrabold text-brasa-700 underline" onClick={() => navigate(`/garcom/comanda/${c.mergedInto}`)}>
               Abrir a comanda que ficou com os itens
@@ -302,10 +380,21 @@ export default function ComandaPage() {
               {formatBRL(c.total)}
             </p>
           </div>
+          {open && c.items.length === 0 && (
+            <Button variant="secondary" loading={discard.isPending} onClick={() => discard.mutate(undefined, { onSuccess: () => navigate(`/garcom/mesa/${c.tableId}`) })}>
+              Descartar
+            </Button>
+          )}
+          {open && c.items.length > 0 && (
+            <Button variant="secondary" onClick={() => setPanel('close')} className="gap-1.5">
+              <Icon name="money" />
+              Fechar conta
+            </Button>
+          )}
           {open && (
-            <Button onClick={() => setPanel('add')} className="gap-1.5">
+            <Button onClick={() => setPanel('add')} className="gap-1.5" aria-label="Lançar item">
               <Icon name="plus" />
-              Lançar item
+              <span className="max-[380px]:sr-only">Lançar item</span>
             </Button>
           )}
         </div>
@@ -315,6 +404,7 @@ export default function ComandaPage() {
       {panel === 'edit' && <EditSheet comanda={c} onClose={close} />}
       {panel === 'move' && <MoveSheet comanda={c} onClose={close} />}
       {panel === 'merge' && <MergeSheet comanda={c} onClose={close} />}
+      {panel === 'close' && <CloseSheet comanda={c} onClose={close} />}
       {panel && typeof panel === 'object' && <ItemSheet comanda={c} item={panel.item} onClose={close} />}
     </div>
   )

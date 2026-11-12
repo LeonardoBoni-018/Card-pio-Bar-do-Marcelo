@@ -8,6 +8,7 @@ import ItemsPage from './ItemsPage'
 import SharePage from './SharePage'
 import LoginPage from './LoginPage'
 import { RequireAuth } from './RequireAuth'
+import ComandasPage from './ComandasPage'
 import { SalaoLayout } from './SalaoLayout'
 import TablesPage from './TablesPage'
 import WaitersPage from './WaitersPage'
@@ -31,6 +32,7 @@ export default function AdminApp() {
                 <Route index element={<Navigate to="mesas" replace />} />
                 <Route path="mesas" element={<TablesPage />} />
                 <Route path="garcons" element={<WaitersPage />} />
+                <Route path="comandas" element={<ComandasPage />} />
               </Route>
             )}
           </Route>

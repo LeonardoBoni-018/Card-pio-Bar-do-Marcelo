@@ -51,6 +51,15 @@ public final class ComandaDtos {
             @Size(max = 140, message = "máximo de 140 caracteres") String note) {
     }
 
+    public record CloseRequest(
+            @DecimalMin(value = "0.00", message = "o desconto não pode ser negativo") @Digits(integer = 8, fraction = 2, message = "use no máximo 2 casas decimais")
+            BigDecimal discount,
+            @Min(value = 1, message = "mínimo de 1 pessoa") @Max(value = 99, message = "máximo de 99 pessoas") Integer people) {
+    }
+
+    public record CancelRequest(@Size(max = 140, message = "máximo de 140 caracteres") String reason) {
+    }
+
     public record MoveRequest(@NotNull(message = "escolha a mesa de destino") Long tableId) {
     }
 
@@ -67,12 +76,29 @@ public final class ComandaDtos {
 
     public record ComandaResponse(Long id, Long tableId, String tableName, String label, ComandaStatus status, Integer people,
                                   BigDecimal subtotal, BigDecimal discount, BigDecimal total, String openedBy, Instant openedAt,
-                                  Instant updatedAt, long version, Long mergedInto, List<ItemResponse> items) {
+                                  Instant updatedAt, long version, Long mergedInto, String closedBy, Instant closedAt,
+                                  String canceledBy, Instant canceledAt, String cancelReason, int reopenedCount, List<ItemResponse> items) {
         static ComandaResponse from(Comanda c) {
             BigDecimal total = c.getTotal() != null ? c.getTotal() : c.currentTotal();
             return new ComandaResponse(c.getId(), c.getTable().getId(), c.getTable().getName(), c.getLabel(), c.getStatus(), c.getPeople(),
                     c.subtotal(), c.getDiscount(), total, c.getOpenedBy().getDisplayName(), c.getOpenedAt(), c.getUpdatedAt(), c.getVersion(),
-                    c.getMergedInto(), c.getItems().stream().map(ItemResponse::from).toList());
+                    c.getMergedInto(), name(c.getClosedBy()), c.getClosedAt(), name(c.getCanceledBy()), c.getCanceledAt(), c.getCancelReason(),
+                    c.getReopenedCount(), c.getItems().stream().map(ItemResponse::from).toList());
+        }
+    }
+
+    private static String name(com.bardomarcelo.menu.auth.AppUser u) {
+        return u == null ? null : u.getDisplayName();
+    }
+
+    /** Linha da lista de comandas do proprietário. */
+    public record ComandaListItem(Long id, String tableName, String label, ComandaStatus status, BigDecimal total, int itemCount,
+                                  String openedBy, Instant openedAt, String closedBy, Instant closedAt, String cancelReason) {
+        static ComandaListItem from(Comanda c) {
+            return new ComandaListItem(c.getId(), c.getTable().getName(), c.getLabel(), c.getStatus(),
+                    c.getTotal() != null ? c.getTotal() : c.currentTotal(), c.getItems().size(), c.getOpenedBy().getDisplayName(), c.getOpenedAt(),
+                    name(c.getClosedBy() != null ? c.getClosedBy() : c.getCanceledBy()), c.getClosedAt() != null ? c.getClosedAt() : c.getCanceledAt(),
+                    c.getCancelReason());
         }
     }
 

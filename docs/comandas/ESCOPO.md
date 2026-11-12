@@ -77,10 +77,10 @@ V11 (etapa 2, feita):
 | Garçom/dono | `GET /api/pedidos/comandas/{id}` | detalhe com itens e total (feito) |
 | Garçom/dono | `POST/PATCH/DELETE /api/pedidos/comandas/{id}/itens[/{itemId}]` | lançar, alterar ou remover item (do cardápio ou avulso) (feito) |
 | Garçom/dono | `POST /api/pedidos/comandas/{id}/mover` · `/juntar` | trocar de mesa · juntar duas comandas (feito) |
-| Garçom/dono | `POST /api/pedidos/comandas/{id}/fechar` | fechar (desconto e divisão por pessoas só informativa) |
+| Garçom/dono | `POST /api/pedidos/comandas/{id}/fechar` · `/descartar` | fechar (desconto até o valor da conta; divisão por pessoas só informativa; total congelado) · descartar comanda vazia (feito) |
 | Garçom/dono | `GET /api/pedidos/cardapio` | produtos para lançar, com o estado de disponibilidade (feito) |
 | Dono | `/api/admin/garcons` (GET, POST, PUT) · `/api/admin/mesas` (GET, POST, `POST /lote`, PUT, DELETE) | cadastros (feito) |
-| Dono | `POST /api/admin/comandas/{id}/reabrir` · `/cancelar` | correções |
+| Dono | `GET /api/admin/comandas?status&de&ate` · `POST /{id}/reabrir` · `/cancelar` | lista do dia (vira às 05:00) · reabrir conta fechada · cancelar com motivo (feito; V12) |
 | Dono | `GET /api/admin/relatorios?de&ate` · `.csv` | total, nº de comandas, ticket médio, por garçom/dia/mesa, mais vendidos, avulsos |
 
 O "dia" dos relatórios usa o fuso America/Sao_Paulo e vira às 05:00, para a madrugada contar no dia anterior.
@@ -101,8 +101,8 @@ O "dia" dos relatórios usa o fuso America/Sao_Paulo e vira às 05:00, para a ma
 - [x] 0. Estrutura: branch, banco isolado, chaves de funcionalidade, este documento
 - [x] 1. Perfis (ADMIN/GARCOM) no login e no token, cadastro de garçons, cadastro de mesas (migration V10), ambiente de testes
 - [x] 2. API de comandas: abrir, lançar (cardápio e avulso), editar, remover, mover, juntar; testes de cálculo (kg, desconto, arredondamento) e de concorrência
-- [ ] 3. Tela do garçom: mesas, comandas, lançamento
-- [ ] 4. Fechamento e divisão por pessoas; reabrir e cancelar pelo dono
+- [x] 3. Tela do garçom: mesas, comandas, lançamento
+- [x] 4. Fechamento e divisão por pessoas; reabrir e cancelar pelo dono
 - [ ] 5. Relatórios e exportação CSV
 - [ ] 6. Testes E2E do fluxo completo e nos 17 tamanhos de tela; validação com o cliente no banco `dev-comandas`
 - [ ] 7. Lançamento (ver abaixo)

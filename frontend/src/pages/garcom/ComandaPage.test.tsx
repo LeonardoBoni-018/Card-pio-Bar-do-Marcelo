@@ -259,4 +259,51 @@ describe('Comanda (garçom)', () => {
     expect(await screen.findByRole('list', { name: 'Itens da comanda' })).toBeInTheDocument()
     expect(sent).toEqual({ tableId: 1, label: 'Casal', people: 2 })
   })
+
+  it('fecha a conta com desconto e divisão por pessoas', async () => {
+    let sent: unknown
+    server.use(
+      http.post(
+        `${API}/api/pedidos/comandas/5/fechar`,
+        json((body) => ((sent = body), { ...base, status: 'CLOSED', discount: 2, total: 15, closedBy: 'Ana' })),
+      ),
+    )
+    const user = userEvent.setup()
+    render()
+    await user.click(await screen.findByRole('button', { name: 'Fechar conta' }))
+    const sheet = await screen.findByRole('dialog', { name: 'Fechar conta' })
+    await user.type(within(sheet).getByLabelText('Desconto (R$)'), '2')
+    expect(within(sheet).getByTestId('fechar-total')).toHaveTextContent('15,00')
+    expect(within(sheet).getByTestId('por-pessoa')).toHaveTextContent('7,50')
+    await user.click(within(sheet).getByRole('button', { name: /Confirmar fechamento/ }))
+    expect(await screen.findByText(/Conta fechada: R\$\s?15,00\./)).toBeInTheDocument()
+    expect(sent).toEqual({ discount: 2, people: 2 })
+    expect(await screen.findByText(/Fechada por Ana/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Lançar item' })).not.toBeInTheDocument()
+  })
+
+  it('desconto maior que a conta bloqueia o fechamento', async () => {
+    const user = userEvent.setup()
+    render()
+    await user.click(await screen.findByRole('button', { name: 'Fechar conta' }))
+    const sheet = await screen.findByRole('dialog', { name: 'Fechar conta' })
+    await user.type(within(sheet).getByLabelText('Desconto (R$)'), '20')
+    expect(within(sheet).getByText('Maior que a conta.')).toBeInTheDocument()
+    expect(within(sheet).getByRole('button', { name: /Confirmar fechamento/ })).toBeDisabled()
+  })
+
+  it('comanda vazia mostra Descartar no lugar de Fechar conta', async () => {
+    let discarded = false
+    server.use(
+      http.get(`${API}/api/pedidos/comandas/5`, () => HttpResponse.json({ ...base, items: [], subtotal: 0, total: 0 })),
+      http.post(`${API}/api/pedidos/comandas/5/descartar`, () => ((discarded = true), HttpResponse.json({ ...base, items: [], status: 'CANCELED' }))),
+    )
+    const user = userEvent.setup()
+    render()
+    expect(await screen.findByRole('button', { name: 'Descartar' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Fechar conta' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Descartar' }))
+    expect(await screen.findByText('Comanda descartada.')).toBeInTheDocument()
+    expect(discarded).toBe(true)
+  })
 })

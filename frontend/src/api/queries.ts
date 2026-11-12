@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getComanda, getItem, getMenu, getServiceMenu, listCategories, listServiceTables, listTables, listWaiters, searchItems } from './endpoints'
+import { getComanda, listAdminComandas, getItem, getMenu, getServiceMenu, listCategories, listServiceTables, listTables, listWaiters, searchItems } from './endpoints'
 import { readMenuCache, writeMenuCache } from '../lib/menuCache'
 import type { ItemSearch } from './types'
 
@@ -12,6 +12,7 @@ export const keys = {
   serviceTables: ['service', 'tables'] as const,
   serviceMenu: ['service', 'menu'] as const,
   comanda: (id: number) => ['service', 'comanda', id] as const,
+  adminComandas: ['admin', 'comandas'] as const,
 }
 
 /**
@@ -56,3 +57,5 @@ export const useServiceTables = () =>
 export const useComanda = (id: number) =>
   useQuery({ queryKey: keys.comanda(id), queryFn: () => getComanda(id), refetchInterval: 5_000, refetchOnWindowFocus: true })
 export const useServiceMenu = () => useQuery({ queryKey: keys.serviceMenu, queryFn: getServiceMenu, staleTime: 60_000 })
+export const useAdminComandas = (params: Parameters<typeof listAdminComandas>[0]) =>
+  useQuery({ queryKey: [...keys.adminComandas, params], queryFn: () => listAdminComandas(params), refetchInterval: 15_000, placeholderData: (p) => p })

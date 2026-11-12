@@ -160,6 +160,73 @@ public class ComandaService {
         return ComandaResponse.from(comandas.findById(id).orElseThrow(ComandaService::notFound));
     }
 
+    /** Fecha a conta (qualquer garçom). Comanda vazia não fecha: descarte. Desconto até o valor da conta. */
+    @Transactional
+    public ComandaResponse close(Long id, ComandaDtos.CloseRequest request, String username) {
+        Comanda comanda = openForUpdate(id);
+        if (comanda.getItems().isEmpty()) {
+            throw new ConflictException("Comanda sem itens: descarte em vez de fechar.");
+        }
+        BigDecimal discount = request.discount() == null ? BigDecimal.ZERO : request.discount();
+        if (discount.compareTo(comanda.subtotal()) > 0) {
+            throw new ConflictException("O desconto não pode ser maior que o valor da conta.");
+        }
+        comanda.close(discount, request.people(), user(username));
+        return saved(comanda);
+    }
+
+    /** Descarta comanda aberta por engano (sem itens). Fica no histórico como cancelada. */
+    @Transactional
+    public ComandaResponse discard(Long id, String username) {
+        Comanda comanda = openForUpdate(id);
+        if (!comanda.getItems().isEmpty()) {
+            throw new ConflictException("Só dá para descartar comanda sem itens. Remova os itens ou feche a conta.");
+        }
+        comanda.cancel("Descartada (aberta sem itens)", user(username));
+        return saved(comanda);
+    }
+
+    /** Proprietário: reabre conta fechada. A mesa precisa estar ativa. */
+    @Transactional
+    public ComandaResponse reopen(Long id) {
+        Comanda comanda = comandas.findForUpdate(id).orElseThrow(ComandaService::notFound);
+        if (comanda.getStatus() != ComandaStatus.CLOSED) {
+            throw new ConflictException("Só comandas fechadas podem ser reabertas.");
+        }
+        if (!comanda.getTable().isActive()) {
+            throw new ConflictException("A mesa “" + comanda.getTable().getName() + "” está desativada. Ative-a antes de reabrir.");
+        }
+        comanda.reopen();
+        return saved(comanda);
+    }
+
+    /** Proprietário: cancela comanda aberta ou fechada (sai dos relatórios), com motivo. */
+    @Transactional
+    public ComandaResponse cancel(Long id, String reason, String username) {
+        Comanda comanda = comandas.findForUpdate(id).orElseThrow(ComandaService::notFound);
+        if (comanda.getStatus() != ComandaStatus.OPEN && comanda.getStatus() != ComandaStatus.CLOSED) {
+            throw new ConflictException("Esta comanda não pode ser cancelada.");
+        }
+        comanda.cancel(blankToNull(reason), user(username));
+        return saved(comanda);
+    }
+
+    /** Proprietário: lista por situação e dia (fuso de São Paulo, dia vira às 05:00). */
+    @Transactional(readOnly = true)
+    public List<ComandaDtos.ComandaListItem> search(List<ComandaStatus> statuses, java.time.LocalDate from, java.time.LocalDate to) {
+        java.time.ZoneId zone = java.time.ZoneId.of("America/Sao_Paulo");
+        java.time.LocalTime cut = java.time.LocalTime.of(5, 0);
+        java.time.Instant start = from.atTime(cut).atZone(zone).toInstant();
+        java.time.Instant end = to.plusDays(1).atTime(cut).atZone(zone).toInstant();
+        List<ComandaStatus> st = statuses == null || statuses.isEmpty() ? List.of(ComandaStatus.values()) : statuses;
+        return comandas.search(st, start, end).stream().map(ComandaDtos.ComandaListItem::from).toList();
+    }
+
+    /** "Hoje" no bar: antes das 05:00 ainda conta como o dia anterior. */
+    public static java.time.LocalDate businessDay(java.time.Instant now) {
+        return now.atZone(java.time.ZoneId.of("America/Sao_Paulo")).minusHours(5).toLocalDate();
+    }
+
     private ComandaResponse saved(Comanda comanda) {
         comandas.saveAndFlush(comanda); // grava já para a resposta trazer a versão nova
         return ComandaResponse.from(comanda);

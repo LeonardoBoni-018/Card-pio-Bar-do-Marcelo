@@ -66,6 +66,16 @@ public class ComandaController {
         return service.removeItem(id, itemId);
     }
 
+    @PostMapping("/{id}/fechar")
+    public ComandaResponse close(@PathVariable Long id, @Valid @RequestBody ComandaDtos.CloseRequest request, @AuthenticationPrincipal Jwt jwt) {
+        return service.close(id, request, jwt.getSubject());
+    }
+
+    @PostMapping("/{id}/descartar")
+    public ComandaResponse discard(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        return service.discard(id, jwt.getSubject());
+    }
+
     @PostMapping("/{id}/mover")
     public ComandaResponse move(@PathVariable Long id, @Valid @RequestBody MoveRequest request) {
         return service.move(id, request.tableId());

@@ -26,6 +26,15 @@ public interface ComandaRepository extends JpaRepository<Comanda, Long> {
 
     boolean existsByTableId(Long tableId);
 
+    /** Lista do proprietário: por situação e período de abertura, mais recentes primeiro. */
+    @Query("""
+            select distinct c from Comanda c
+            join fetch c.table join fetch c.openedBy left join fetch c.closedBy left join fetch c.canceledBy left join fetch c.items
+            where c.status in :statuses and c.openedAt >= :from and c.openedAt < :to
+            order by c.openedAt desc
+            """)
+    List<Comanda> search(java.util.Collection<ComandaStatus> statuses, java.time.Instant from, java.time.Instant to);
+
     /** Move todos os itens de uma comanda para outra (juntar), direto no banco. */
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("update ComandaItem i set i.comanda.id = :targetId where i.comanda.id = :sourceId")

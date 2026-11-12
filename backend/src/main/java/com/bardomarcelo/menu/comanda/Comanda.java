@@ -74,6 +74,19 @@ public class Comanda {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "cancel_reason", length = 140)
+    private String cancelReason;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "canceled_by")
+    private AppUser canceledBy;
+
+    @Column(name = "canceled_at")
+    private Instant canceledAt;
+
+    @Column(name = "reopened_count", nullable = false)
+    private int reopenedCount;
+
     @Version
     private long version;
 
@@ -136,6 +149,35 @@ public class Comanda {
         touch();
     }
 
+    /** Fecha a conta: grava desconto, nº de pessoas e o total final (que não muda mais, mesmo se o cardápio mudar). */
+    void close(BigDecimal discount, Integer people, AppUser by) {
+        this.discount = discount;
+        if (people != null) this.people = people;
+        this.total = currentTotal();
+        this.status = ComandaStatus.CLOSED;
+        this.closedBy = by;
+        this.closedAt = Instant.now();
+        touch();
+    }
+
+    /** Proprietário reabre uma conta fechada por engano: volta a aceitar itens. */
+    void reopen() {
+        this.status = ComandaStatus.OPEN;
+        this.total = null;
+        this.closedBy = null;
+        this.closedAt = null;
+        this.reopenedCount++;
+        touch();
+    }
+
+    void cancel(String reason, AppUser by) {
+        this.status = ComandaStatus.CANCELED;
+        this.cancelReason = reason;
+        this.canceledBy = by;
+        this.canceledAt = Instant.now();
+        touch();
+    }
+
     void touch() {
         this.updatedAt = Instant.now();
     }
@@ -154,5 +196,9 @@ public class Comanda {
     public Instant getClosedAt() { return closedAt; }
     public Instant getUpdatedAt() { return updatedAt; }
     public long getVersion() { return version; }
+    public String getCancelReason() { return cancelReason; }
+    public AppUser getCanceledBy() { return canceledBy; }
+    public Instant getCanceledAt() { return canceledAt; }
+    public int getReopenedCount() { return reopenedCount; }
     public List<ComandaItem> getItems() { return items; }
 }

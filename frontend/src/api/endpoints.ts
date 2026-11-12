@@ -1,5 +1,5 @@
 import { fastReadsEnabled, request } from './client'
-import type { AddItemInput, AdminItem, Comanda, ServiceMenuCategory, Category, DiningTable, ItemInput, ItemSearch, MenuCategory, Page, TableInput, TableOverview, TokenResponse, Waiter, WaiterInput } from './types'
+import type { AddItemInput, AdminItem, Comanda, ComandaListItem, ComandaStatus, ServiceMenuCategory, Category, DiningTable, ItemInput, ItemSearch, MenuCategory, Page, TableInput, TableOverview, TokenResponse, Waiter, WaiterInput } from './types'
 
 /**
  * Cardápio público. Com as leituras rápidas ligadas, tenta primeiro a função da Vercel (não dorme) e, se falhar
@@ -90,3 +90,16 @@ export const removeComandaItem = (id: number, itemId: number) => request<Comanda
 export const moveComanda = (id: number, tableId: number) => request<Comanda>(`/api/pedidos/comandas/${id}/mover`, { method: 'POST', json: { tableId }, auth: true })
 export const mergeComanda = (id: number, fromComandaId: number) =>
   request<Comanda>(`/api/pedidos/comandas/${id}/juntar`, { method: 'POST', json: { fromComandaId }, auth: true })
+export const closeComanda = (id: number, discount: number, people?: number) =>
+  request<Comanda>(`/api/pedidos/comandas/${id}/fechar`, { method: 'POST', json: { discount, people }, auth: true })
+export const discardComanda = (id: number) => request<Comanda>(`/api/pedidos/comandas/${id}/descartar`, { method: 'POST', auth: true })
+
+export function listAdminComandas(params: { status?: ComandaStatus[]; de?: string; ate?: string }) {
+  const q = new URLSearchParams()
+  params.status?.forEach((s) => q.append('status', s))
+  if (params.de) q.set('de', params.de)
+  if (params.ate) q.set('ate', params.ate)
+  return request<ComandaListItem[]>(`/api/admin/comandas?${q}`, { auth: true })
+}
+export const reopenComanda = (id: number) => request<Comanda>(`/api/admin/comandas/${id}/reabrir`, { method: 'POST', auth: true })
+export const cancelComanda = (id: number, reason?: string) => request<Comanda>(`/api/admin/comandas/${id}/cancelar`, { method: 'POST', json: { reason }, auth: true })

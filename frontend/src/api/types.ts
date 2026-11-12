@@ -149,7 +149,28 @@ export interface Comanda {
   updatedAt: string
   version: number
   mergedInto: number | null
+  closedBy?: string | null
+  closedAt?: string | null
+  canceledBy?: string | null
+  canceledAt?: string | null
+  cancelReason?: string | null
+  reopenedCount?: number
   items: ComandaItem[]
+}
+
+/** Linha da lista de comandas do proprietário. */
+export interface ComandaListItem {
+  id: number
+  tableName: string
+  label: string | null
+  status: ComandaStatus
+  total: number
+  itemCount: number
+  openedBy: string
+  openedAt: string
+  closedBy: string | null
+  closedAt: string | null
+  cancelReason: string | null
 }
 
 export interface ServiceMenuItem {
