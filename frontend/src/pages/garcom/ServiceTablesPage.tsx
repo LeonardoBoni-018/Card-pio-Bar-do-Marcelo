@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { useServiceTables } from '../../api/queries'
 import { ErrorState } from '../../components/ErrorState'
 import { Icon } from '../../components/ui/Icon'
@@ -13,11 +14,6 @@ export default function ServiceTablesPage() {
     <div className="space-y-5">
       <PageHeader icon="store" title="Mesas" subtitle="Escolha a mesa para lançar os pedidos." />
 
-      <p role="note" className="flex items-start gap-2 rounded-xl bg-sol-100 px-3 py-2 text-sm font-semibold text-tinta-900 ring-1 ring-sol-500">
-        <Icon name="info" className="mt-0.5 size-4" />
-        Em teste: as telas para abrir comandas e lançar itens chegam na próxima etapa.
-      </p>
-
       {tables.isPending && <Spinner label="Carregando mesas…" />}
       {tables.isError && <ErrorState message={tables.error.message} onRetry={() => void tables.refetch()} />}
       {tables.data?.length === 0 && (
@@ -31,19 +27,22 @@ export default function ServiceTablesPage() {
           {tables.data.map((table) => {
             const count = table.comandas?.length ?? 0
             return (
-              <li
-                key={table.id}
-                className={`${cardClass} flex min-h-24 flex-col items-center justify-center gap-1 text-center ${count > 0 ? 'ring-2 ring-laranja-500' : ''}`}
-              >
-                <span className="break-words text-lg font-extrabold leading-tight">{table.name}</span>
-                {count === 0 ? (
-                  <span className="rounded-full bg-brasa-50 px-2 py-0.5 text-xs font-bold text-tinta-700">Livre</span>
-                ) : (
-                  <>
-                    <span className="rounded-full bg-sol-300 px-2 py-0.5 text-xs font-bold text-tinta-900">{count === 1 ? '1 comanda' : `${count} comandas`}</span>
-                    <span className="text-sm font-extrabold text-tinta-900">{formatBRL(table.openTotal)}</span>
-                  </>
-                )}
+              <li key={table.id}>
+                <Link
+                  to={`mesa/${table.id}`}
+                  aria-label={`${table.name}: ${count === 0 ? 'livre' : count === 1 ? '1 comanda aberta' : `${count} comandas abertas`}`}
+                  className={`${cardClass} press flex min-h-24 flex-col items-center justify-center gap-1 text-center hover:ring-brasa-300 ${count > 0 ? 'ring-2 ring-laranja-500' : ''}`}
+                >
+                  <span className="break-words text-lg font-extrabold leading-tight">{table.name}</span>
+                  {count === 0 ? (
+                    <span className="rounded-full bg-brasa-50 px-2 py-0.5 text-xs font-bold text-tinta-700">Livre</span>
+                  ) : (
+                    <>
+                      <span className="rounded-full bg-sol-300 px-2 py-0.5 text-xs font-bold text-tinta-900">{count === 1 ? '1 comanda' : `${count} comandas`}</span>
+                      <span className="text-sm font-extrabold text-tinta-900">{formatBRL(table.openTotal)}</span>
+                    </>
+                  )}
+                </Link>
               </li>
             )
           })}

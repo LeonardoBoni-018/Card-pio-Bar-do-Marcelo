@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getItem, getMenu, listCategories, listServiceTables, listTables, listWaiters, searchItems } from './endpoints'
+import { getComanda, getItem, getMenu, getServiceMenu, listCategories, listServiceTables, listTables, listWaiters, searchItems } from './endpoints'
 import { readMenuCache, writeMenuCache } from '../lib/menuCache'
 import type { ItemSearch } from './types'
 
@@ -10,6 +10,8 @@ export const keys = {
   tables: ['admin', 'tables'] as const,
   waiters: ['admin', 'waiters'] as const,
   serviceTables: ['service', 'tables'] as const,
+  serviceMenu: ['service', 'menu'] as const,
+  comanda: (id: number) => ['service', 'comanda', id] as const,
 }
 
 /**
@@ -49,3 +51,8 @@ export const useWaiters = () => useQuery({ queryKey: keys.waiters, queryFn: list
 /** Mesas do garçom: atualiza sozinha (outro garçom pode abrir comanda a qualquer momento). */
 export const useServiceTables = () =>
   useQuery({ queryKey: keys.serviceTables, queryFn: listServiceTables, refetchInterval: 10_000, refetchOnWindowFocus: true })
+
+/** Comanda aberta no celular: atualiza a cada 5 s para mostrar o que outros garçons lançaram. */
+export const useComanda = (id: number) =>
+  useQuery({ queryKey: keys.comanda(id), queryFn: () => getComanda(id), refetchInterval: 5_000, refetchOnWindowFocus: true })
+export const useServiceMenu = () => useQuery({ queryKey: keys.serviceMenu, queryFn: getServiceMenu, staleTime: 60_000 })

@@ -1,5 +1,5 @@
 import { fastReadsEnabled, request } from './client'
-import type { AdminItem, Category, DiningTable, ItemInput, ItemSearch, MenuCategory, Page, TableInput, TableOverview, TokenResponse, Waiter, WaiterInput } from './types'
+import type { AddItemInput, AdminItem, Comanda, ServiceMenuCategory, Category, DiningTable, ItemInput, ItemSearch, MenuCategory, Page, TableInput, TableOverview, TokenResponse, Waiter, WaiterInput } from './types'
 
 /**
  * Cardápio público. Com as leituras rápidas ligadas, tenta primeiro a função da Vercel (não dorme) e, se falhar
@@ -76,3 +76,17 @@ export const updateWaiter = (id: number, input: WaiterInput) => request<Waiter>(
 
 /** Mesas ativas, para o garçom. */
 export const listServiceTables = () => request<TableOverview[]>('/api/pedidos/mesas', { auth: true })
+
+export const getServiceMenu = () => request<ServiceMenuCategory[]>('/api/pedidos/cardapio', { auth: true })
+export const getComanda = (id: number) => request<Comanda>(`/api/pedidos/comandas/${id}`, { auth: true })
+export const openComanda = (tableId: number, label?: string, people?: number) =>
+  request<Comanda>('/api/pedidos/comandas', { method: 'POST', json: { tableId, label, people }, auth: true })
+export const updateComanda = (id: number, label: string | undefined, people: number | undefined) =>
+  request<Comanda>(`/api/pedidos/comandas/${id}`, { method: 'PATCH', json: { label, people }, auth: true })
+export const addComandaItem = (id: number, input: AddItemInput) => request<Comanda>(`/api/pedidos/comandas/${id}/itens`, { method: 'POST', json: input, auth: true })
+export const updateComandaItem = (id: number, itemId: number, quantity: number, note?: string | null) =>
+  request<Comanda>(`/api/pedidos/comandas/${id}/itens/${itemId}`, { method: 'PATCH', json: { quantity, note: note ?? undefined }, auth: true })
+export const removeComandaItem = (id: number, itemId: number) => request<Comanda>(`/api/pedidos/comandas/${id}/itens/${itemId}`, { method: 'DELETE', auth: true })
+export const moveComanda = (id: number, tableId: number) => request<Comanda>(`/api/pedidos/comandas/${id}/mover`, { method: 'POST', json: { tableId }, auth: true })
+export const mergeComanda = (id: number, fromComandaId: number) =>
+  request<Comanda>(`/api/pedidos/comandas/${id}/juntar`, { method: 'POST', json: { fromComandaId }, auth: true })

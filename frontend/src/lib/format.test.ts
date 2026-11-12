@@ -27,3 +27,23 @@ describe('priceToInput', () => {
 describe('normalize', () => {
   it('remove acentos e ignora maiúsculas', () => expect(normalize('Pão À Passarinho')).toBe('pao a passarinho'))
 })
+
+describe('parseWeightKg', () => {
+  it('aceita kg com vírgula ou ponto, gramas e recusa o resto', async () => {
+    const { parseWeightKg } = await import('./format')
+    expect(parseWeightKg('0,355')).toBe(0.355)
+    expect(parseWeightKg('1.2 kg')).toBe(1.2)
+    expect(parseWeightKg('350g')).toBe(0.35)
+    expect(parseWeightKg('0')).toBeNull()
+    expect(parseWeightKg('0,3555')).toBeNull()
+    expect(parseWeightKg('abc')).toBeNull()
+  })
+})
+
+describe('formatQuantity', () => {
+  it('mostra unidades e quilos', async () => {
+    const { formatQuantity } = await import('./format')
+    expect(formatQuantity(3, 'UNIT')).toBe('3×')
+    expect(formatQuantity(0.355, 'KG')).toBe('0,355 kg')
+  })
+})

@@ -29,3 +29,24 @@ export function priceToInput(value: number): string {
 export function normalize(text: string): string {
   return text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
 }
+
+/** Converte peso digitado ("0,355", "1.2", "350g") em kg com até 3 casas; null se inválido ou zero. */
+export function parseWeightKg(input: string): number | null {
+  const text = input.trim().toLowerCase().replace(/\s/g, '')
+  if (!text) return null
+  const grams = /^(\d{1,6})g$/.exec(text)
+  if (grams) {
+    const kg = Number(grams[1]) / 1000
+    return kg > 0 && kg <= 999 ? kg : null
+  }
+  const normalized = text.replace(/kg$/, '').replace(',', '.')
+  if (!/^\d{1,3}(\.\d{1,3})?$/.test(normalized)) return null
+  const kg = Number(normalized)
+  return kg > 0 ? kg : null
+}
+
+/** Quantidade como o garçom fala: "3×" ou "0,355 kg". */
+export function formatQuantity(quantity: number, unit?: PriceUnit): string {
+  if (unit === 'KG') return `${quantity.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} kg`
+  return `${quantity}×`
+}

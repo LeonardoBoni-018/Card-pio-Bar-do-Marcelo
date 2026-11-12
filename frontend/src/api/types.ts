@@ -117,3 +117,60 @@ export interface TableOverview extends DiningTable {
   openTotal: number
   comandas: ComandaSummary[]
 }
+
+export type ComandaStatus = 'OPEN' | 'CLOSED' | 'CANCELED' | 'MERGED'
+
+export interface ComandaItem {
+  id: number
+  menuItemId: number | null
+  name: string
+  unitPrice: number
+  priceUnit: PriceUnit
+  quantity: number
+  lineTotal: number
+  note: string | null
+  custom: boolean
+  addedBy: string
+  addedAt: string
+}
+
+export interface Comanda {
+  id: number
+  tableId: number
+  tableName: string
+  label: string | null
+  status: ComandaStatus
+  people: number | null
+  subtotal: number
+  discount: number
+  total: number
+  openedBy: string
+  openedAt: string
+  updatedAt: string
+  version: number
+  mergedInto: number | null
+  items: ComandaItem[]
+}
+
+export interface ServiceMenuItem {
+  id: number
+  name: string
+  price: number
+  priceUnit: PriceUnit
+  available: boolean
+}
+
+export interface ServiceMenuCategory {
+  id: number
+  name: string
+  items: ServiceMenuItem[]
+}
+
+/** Lançar item: do cardápio (menuItemId) ou avulso (name + unitPrice). */
+export interface AddItemInput {
+  menuItemId?: number
+  name?: string
+  unitPrice?: number
+  quantity: number
+  note?: string
+}
